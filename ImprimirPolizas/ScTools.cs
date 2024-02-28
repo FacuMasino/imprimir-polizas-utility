@@ -1,4 +1,13 @@
-﻿namespace ImprimirPolizas
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Security.Permissions;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace ImprimirPolizas
 {
     internal static class ScTools
     {
@@ -17,6 +26,8 @@
             policyCard = 2,
             paymentTC = 3,
             paymentProof = 5,
+            coupons = 6,
+            invoice = 7,
         }
 
         // Verifica que el servidor este disponible
@@ -37,28 +48,7 @@
             }
         }
 
-        public static void DownloadDoc(string pcNumber, int vhNumber, DownloadOpt option)
-        {
-            try
-            {
-                using (var client = new WebClient())
-                {
-                    client.DownloadFile(
-                        $"{_baseUrl}getBinary?pcN={pcNumber}&vhN={vhNumber}&opt={(int)option}",
-                        "frente.pdf"
-                    );
-                    MessageBox.Show(
-                        $"{_baseUrl}getBinary?pcN={pcNumber}&vhN={vhNumber}&opt={(int)option}"
-                    );
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Ocurrió un error al descargar los archivos.\n" + e.Message);
-            }
-        }
-
-        public static async Task DownloadAnnualDocAsync(
+        public static async Task DownloadDocAsync(
             string pcNumber,
             int vhNumber,
             DownloadOpt opt,
@@ -113,6 +103,12 @@
                     break;
                 case DownloadOpt.policyCard:
                     fileName += "TarjetaCirculacion.pdf";
+                    break;
+                case DownloadOpt.coupons:
+                    fileName += "CuponesDePago.pdf";
+                    break;
+                case DownloadOpt.invoice:
+                    fileName += "Factura.pdf";
                     break;
                 default:
                     fileName += ".pdf";

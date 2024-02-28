@@ -46,11 +46,17 @@
             this.label1 = new System.Windows.Forms.Label();
             this.iconsList = new System.Windows.Forms.ImageList(this.components);
             this.lnkDownloads = new System.Windows.Forms.LinkLabel();
+            this.chkCoupons = new System.Windows.Forms.CheckBox();
+            this.pbCoupons = new System.Windows.Forms.PictureBox();
+            this.chkInvoice = new System.Windows.Forms.CheckBox();
+            this.pbInvoice = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -78,18 +84,22 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.pbInvoice);
+            this.groupBox2.Controls.Add(this.pbCoupons);
             this.groupBox2.Controls.Add(this.pbPayment);
             this.groupBox2.Controls.Add(this.pbCard);
             this.groupBox2.Controls.Add(this.pbPolicy);
             this.groupBox2.Controls.Add(this.rbDownload);
             this.groupBox2.Controls.Add(this.rbPrint);
+            this.groupBox2.Controls.Add(this.chkInvoice);
+            this.groupBox2.Controls.Add(this.chkCoupons);
             this.groupBox2.Controls.Add(this.chkPaymentProof);
             this.groupBox2.Controls.Add(this.chkPolicyCard);
             this.groupBox2.Controls.Add(this.chkPolicy);
             this.groupBox2.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox2.Location = new System.Drawing.Point(99, 133);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(270, 165);
+            this.groupBox2.Size = new System.Drawing.Size(270, 237);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Seleccione opciones";
@@ -125,7 +135,7 @@
             // 
             this.rbDownload.AutoSize = true;
             this.rbDownload.Enabled = false;
-            this.rbDownload.Location = new System.Drawing.Point(96, 137);
+            this.rbDownload.Location = new System.Drawing.Point(97, 207);
             this.rbDownload.Name = "rbDownload";
             this.rbDownload.Size = new System.Drawing.Size(127, 22);
             this.rbDownload.TabIndex = 2;
@@ -138,7 +148,7 @@
             this.rbPrint.AutoSize = true;
             this.rbPrint.Checked = true;
             this.rbPrint.Enabled = false;
-            this.rbPrint.Location = new System.Drawing.Point(8, 137);
+            this.rbPrint.Location = new System.Drawing.Point(9, 207);
             this.rbPrint.Name = "rbPrint";
             this.rbPrint.Size = new System.Drawing.Size(82, 22);
             this.rbPrint.TabIndex = 1;
@@ -194,7 +204,7 @@
             // 
             this.btnPrint.Enabled = false;
             this.btnPrint.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPrint.Location = new System.Drawing.Point(169, 304);
+            this.btnPrint.Location = new System.Drawing.Point(162, 376);
             this.btnPrint.Name = "btnPrint";
             this.btnPrint.Size = new System.Drawing.Size(131, 43);
             this.btnPrint.TabIndex = 2;
@@ -206,7 +216,7 @@
             // lblStatus
             // 
             this.lblStatus.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblStatus.Location = new System.Drawing.Point(68, 369);
+            this.lblStatus.Location = new System.Drawing.Point(68, 424);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(393, 18);
             this.lblStatus.TabIndex = 3;
@@ -216,7 +226,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(12, 369);
+            this.label1.Location = new System.Drawing.Point(12, 424);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(59, 18);
             this.label1.TabIndex = 4;
@@ -235,7 +245,7 @@
             this.lnkDownloads.AutoSize = true;
             this.lnkDownloads.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lnkDownloads.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(22)))), ((int)(((byte)(105)))));
-            this.lnkDownloads.Location = new System.Drawing.Point(355, 369);
+            this.lnkDownloads.Location = new System.Drawing.Point(355, 424);
             this.lnkDownloads.Name = "lnkDownloads";
             this.lnkDownloads.Size = new System.Drawing.Size(106, 18);
             this.lnkDownloads.TabIndex = 5;
@@ -244,11 +254,55 @@
             this.lnkDownloads.Visible = false;
             this.lnkDownloads.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LnkDownloads_LinkClicked);
             // 
+            // chkCoupons
+            // 
+            this.chkCoupons.AutoSize = true;
+            this.chkCoupons.Enabled = false;
+            this.chkCoupons.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkCoupons.Location = new System.Drawing.Point(8, 126);
+            this.chkCoupons.Name = "chkCoupons";
+            this.chkCoupons.Size = new System.Drawing.Size(151, 23);
+            this.chkCoupons.TabIndex = 0;
+            this.chkCoupons.Text = "Cupones de pago";
+            this.chkCoupons.UseVisualStyleBackColor = true;
+            this.chkCoupons.CheckedChanged += new System.EventHandler(this.chkCoupons_CheckedChanged);
+            // 
+            // pbCoupons
+            // 
+            this.pbCoupons.Location = new System.Drawing.Point(195, 124);
+            this.pbCoupons.Name = "pbCoupons";
+            this.pbCoupons.Size = new System.Drawing.Size(25, 25);
+            this.pbCoupons.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbCoupons.TabIndex = 6;
+            this.pbCoupons.TabStop = false;
+            // 
+            // chkInvoice
+            // 
+            this.chkInvoice.AutoSize = true;
+            this.chkInvoice.Enabled = false;
+            this.chkInvoice.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkInvoice.Location = new System.Drawing.Point(8, 159);
+            this.chkInvoice.Name = "chkInvoice";
+            this.chkInvoice.Size = new System.Drawing.Size(82, 23);
+            this.chkInvoice.TabIndex = 0;
+            this.chkInvoice.Text = "Factura";
+            this.chkInvoice.UseVisualStyleBackColor = true;
+            this.chkInvoice.CheckedChanged += new System.EventHandler(this.chkInvoice_CheckedChanged);
+            // 
+            // pbInvoice
+            // 
+            this.pbInvoice.Location = new System.Drawing.Point(195, 157);
+            this.pbInvoice.Name = "pbInvoice";
+            this.pbInvoice.Size = new System.Drawing.Size(25, 25);
+            this.pbInvoice.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbInvoice.TabIndex = 6;
+            this.pbInvoice.TabStop = false;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(473, 396);
+            this.ClientSize = new System.Drawing.Size(473, 451);
             this.Controls.Add(this.lnkDownloads);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblStatus);
@@ -269,6 +323,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -292,6 +348,10 @@
         private System.Windows.Forms.PictureBox pbPayment;
         private System.Windows.Forms.PictureBox pbCard;
         private System.Windows.Forms.LinkLabel lnkDownloads;
+        private System.Windows.Forms.PictureBox pbCoupons;
+        private System.Windows.Forms.CheckBox chkCoupons;
+        private System.Windows.Forms.PictureBox pbInvoice;
+        private System.Windows.Forms.CheckBox chkInvoice;
     }
 }
 

@@ -13,7 +13,7 @@ namespace ImprimirPolizas
 {
     public partial class frmMain : Form
     {
-        private int[] options = new int[3];
+        private int[] options = new int[5];
         private readonly string downloadFolder = Path.Combine(Directory.GetCurrentDirectory(), "descargas");
         private enum IconState
         {
@@ -91,10 +91,12 @@ namespace ImprimirPolizas
             // De forma asíncrona sin bloquear UI
             Task.Run(async () =>
             {
-                await Task.Delay(5000);
+                await Task.Delay(4000);
                 pbPolicy.Image = null;
                 pbCard.Image = null;
                 pbPayment.Image = null;
+                pbCoupons.Image = null;
+                pbInvoice.Image = null;
                 lblStatus.Text = "Listo";
                 lblStatus.ForeColor = Color.Green;
             });
@@ -162,7 +164,7 @@ namespace ImprimirPolizas
             EnableControls(this, false); // deshabilitar mientras carga
             bool hasFailed = false;
             List<Task> printTasks = new List<Task>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < options.Length; i++)
             {
                 if (options[i] == 0)
                     continue;
@@ -174,7 +176,7 @@ namespace ImprimirPolizas
                         try
                         {
                             SetIconStatus(opt, IconState.Loading);
-                            await ScTools.DownloadAnnualDocAsync(pcNumber, 1, opt, downloadFolder);
+                            await ScTools.DownloadDocAsync(pcNumber, 1, opt, downloadFolder);
                             if (rbPrint.Checked)
                             {
                                 ChangeStatusFromTask("Imprimiendo " + ScTools.GetOptionName(opt) + "...");
@@ -227,6 +229,12 @@ namespace ImprimirPolizas
                     break;
                 case ScTools.DownloadOpt.paymentProof:
                     pbPayment.Image = img;
+                    break;
+                case ScTools.DownloadOpt.coupons:
+                    pbCoupons.Image = img;
+                    break;
+                case ScTools.DownloadOpt.invoice:
+                    pbInvoice.Image = img;
                     break;
                 default:
                     break;
@@ -338,6 +346,32 @@ namespace ImprimirPolizas
         private void LnkDownloads_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             OpenDownloadsFolder();
+        }
+
+        private void chkCoupons_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableBtnPrint();
+            if (chkCoupons.Checked)
+            {
+                options[3] = (int)ScTools.DownloadOpt.coupons;
+            }
+            else
+            {
+                options[3] = 0;
+            }
+        }
+
+        private void chkInvoice_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableBtnPrint();
+            if (chkInvoice.Checked)
+            {
+                options[4] = (int)ScTools.DownloadOpt.invoice;
+            }
+            else
+            {
+                options[4] = 0;
+            }
         }
     }
 }
