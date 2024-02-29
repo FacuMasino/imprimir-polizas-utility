@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -117,6 +118,28 @@ namespace ImprimirPolizas
             return fileName;
         }
 
+        public static async Task<bool> requiresInvoice(string policyNumber)
+        {
+            string baseUrl = $"{_baseUrl}requiresInvoice?pcN={policyNumber}";
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    using (HttpResponseMessage res = await client.GetAsync(baseUrl))
+                    {
+                        using (HttpContent content = res.Content)
+                        {
+                            var resData = await content.ReadAsStringAsync();
+                            //MessageBox.Show(resData);
+                            return ((bool)JObject.Parse(resData)["requiresInvoice"]) || false;
+                        }
+                    }
+                }
+            } catch {
+                return false;
+            }
+        }
+
         public static string GetOptionName(DownloadOpt opt)
         {
             switch (opt)
@@ -127,6 +150,10 @@ namespace ImprimirPolizas
                     return "Comprobante de pago";
                 case ScTools.DownloadOpt.policyCard:
                     return "Tarjeta Seguro Obligatorio";
+                case ScTools.DownloadOpt.coupons:
+                    return "Cupones de pago";
+                case ScTools.DownloadOpt.invoice:
+                    return "Factura";
                 default:
                     return "Desconocido";
             }

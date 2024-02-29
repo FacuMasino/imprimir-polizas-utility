@@ -155,7 +155,39 @@ namespace ImprimirPolizas
                 EnableBtnPrint();
             }
         }
+        private async Task NotifyInvoiceRequired(string policyNumber)
+        {
+            if (!await ScTools.requiresInvoice(policyNumber)) return;
+            string actualAction = rbPrint.Checked ? "imprimir" : "descargar";
+            DialogResult result = MessageBox.Show("La categoría del socio es R.I o Monotributo\n" +
+                            $"Desea {actualAction} la Factura?", "Aviso", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.No) return;
+            ScTools.DownloadOpt opt = ScTools.DownloadOpt.invoice;
+            try
+            {
+                ChangeCheckFromTask(chkInvoice, true);
+                SetIconStatus(ScTools.DownloadOpt.invoice, IconState.Loading);
+                await ScTools.DownloadDocAsync(policyNumber, 1, opt, downloadFolder);
+                if (rbPrint.Checked)
+                {
+                    ChangeStatusFromTask("Imprimiendo " + ScTools.GetOptionName(opt) + "...");
+                    string filePath = Path.Combine(downloadFolder, ScTools.GetFileName(policyNumber, opt));
+                    PrintPDF(filePath);
+                }
+                SetIconStatus(opt, IconState.Ready);
+            }
+            catch (Exception ex)
+            {
+                SetIconStatus(opt, IconState.Error);
+                MessageBox.Show(
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
 
+        }
         private async void BtnPrint_Click(object sender, EventArgs e)
         {
             string pcNumber = txtPolicy.Text;
@@ -164,6 +196,10 @@ namespace ImprimirPolizas
             EnableControls(this, false); // deshabilitar mientras carga
             bool hasFailed = false;
             List<Task> printTasks = new List<Task>();
+            if (!chkInvoice.Checked)
+            {
+                printTasks.Add(Task.Run(async () => await NotifyInvoiceRequired(pcNumber)));
+            }
             for (int i = 0; i < options.Length; i++)
             {
                 if (options[i] == 0)
@@ -204,7 +240,7 @@ namespace ImprimirPolizas
             }
             // Esperar que terminen todas las tasks
             await Task.WhenAll(printTasks);
-            btnPrint.Text = rbPrint.Checked ? "IMPRIMIR":"DESCARGAR";
+            btnPrint.Text = rbPrint.Checked ? "IMPRIMIR" : "DESCARGAR";
             lblStatus.Text = hasFailed ? "Error" : "Listo";
             lblStatus.ForeColor = hasFailed ? Color.Red : Color.Green;
             if (!hasFailed && !lnkDownloads.Visible) lnkDownloads.Visible = true;
@@ -254,6 +290,20 @@ namespace ImprimirPolizas
                         delegate
                         {
                             lblStatus.Text = text;
+                        }
+                    )
+                )
+            );
+        }
+
+        private void ChangeCheckFromTask(CheckBox chk, bool check)
+        {
+            chk.Invoke(
+                (
+                    new MethodInvoker(
+                        delegate
+                        {
+                            chk.Checked = check;
                         }
                     )
                 )
@@ -363,7 +413,7 @@ namespace ImprimirPolizas
 
         private void chkInvoice_CheckedChanged(object sender, EventArgs e)
         {
-            EnableBtnPrint();
+            if(btnPrint.Text != "Aguarde...") EnableBtnPrint();
             if (chkInvoice.Checked)
             {
                 options[4] = (int)ScTools.DownloadOpt.invoice;

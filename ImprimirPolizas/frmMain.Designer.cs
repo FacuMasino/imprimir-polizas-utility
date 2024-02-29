@@ -33,11 +33,15 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtPolicy = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.pbInvoice = new System.Windows.Forms.PictureBox();
+            this.pbCoupons = new System.Windows.Forms.PictureBox();
             this.pbPayment = new System.Windows.Forms.PictureBox();
             this.pbCard = new System.Windows.Forms.PictureBox();
             this.pbPolicy = new System.Windows.Forms.PictureBox();
             this.rbDownload = new System.Windows.Forms.RadioButton();
             this.rbPrint = new System.Windows.Forms.RadioButton();
+            this.chkInvoice = new System.Windows.Forms.CheckBox();
+            this.chkCoupons = new System.Windows.Forms.CheckBox();
             this.chkPaymentProof = new System.Windows.Forms.CheckBox();
             this.chkPolicyCard = new System.Windows.Forms.CheckBox();
             this.chkPolicy = new System.Windows.Forms.CheckBox();
@@ -46,17 +50,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.iconsList = new System.Windows.Forms.ImageList(this.components);
             this.lnkDownloads = new System.Windows.Forms.LinkLabel();
-            this.chkCoupons = new System.Windows.Forms.CheckBox();
-            this.pbCoupons = new System.Windows.Forms.PictureBox();
-            this.chkInvoice = new System.Windows.Forms.CheckBox();
-            this.pbInvoice = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -103,6 +103,24 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Seleccione opciones";
+            // 
+            // pbInvoice
+            // 
+            this.pbInvoice.Location = new System.Drawing.Point(195, 157);
+            this.pbInvoice.Name = "pbInvoice";
+            this.pbInvoice.Size = new System.Drawing.Size(25, 25);
+            this.pbInvoice.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbInvoice.TabIndex = 6;
+            this.pbInvoice.TabStop = false;
+            // 
+            // pbCoupons
+            // 
+            this.pbCoupons.Location = new System.Drawing.Point(195, 124);
+            this.pbCoupons.Name = "pbCoupons";
+            this.pbCoupons.Size = new System.Drawing.Size(25, 25);
+            this.pbCoupons.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbCoupons.TabIndex = 6;
+            this.pbCoupons.TabStop = false;
             // 
             // pbPayment
             // 
@@ -156,6 +174,32 @@
             this.rbPrint.Text = "Imprimir";
             this.rbPrint.UseVisualStyleBackColor = true;
             this.rbPrint.CheckedChanged += new System.EventHandler(this.RbPrint_CheckedChanged);
+            // 
+            // chkInvoice
+            // 
+            this.chkInvoice.AutoSize = true;
+            this.chkInvoice.Enabled = false;
+            this.chkInvoice.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkInvoice.Location = new System.Drawing.Point(8, 159);
+            this.chkInvoice.Name = "chkInvoice";
+            this.chkInvoice.Size = new System.Drawing.Size(82, 23);
+            this.chkInvoice.TabIndex = 0;
+            this.chkInvoice.Text = "Factura";
+            this.chkInvoice.UseVisualStyleBackColor = true;
+            this.chkInvoice.CheckedChanged += new System.EventHandler(this.chkInvoice_CheckedChanged);
+            // 
+            // chkCoupons
+            // 
+            this.chkCoupons.AutoSize = true;
+            this.chkCoupons.Enabled = false;
+            this.chkCoupons.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkCoupons.Location = new System.Drawing.Point(8, 126);
+            this.chkCoupons.Name = "chkCoupons";
+            this.chkCoupons.Size = new System.Drawing.Size(151, 23);
+            this.chkCoupons.TabIndex = 0;
+            this.chkCoupons.Text = "Cupones de pago";
+            this.chkCoupons.UseVisualStyleBackColor = true;
+            this.chkCoupons.CheckedChanged += new System.EventHandler(this.chkCoupons_CheckedChanged);
             // 
             // chkPaymentProof
             // 
@@ -254,50 +298,6 @@
             this.lnkDownloads.Visible = false;
             this.lnkDownloads.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LnkDownloads_LinkClicked);
             // 
-            // chkCoupons
-            // 
-            this.chkCoupons.AutoSize = true;
-            this.chkCoupons.Enabled = false;
-            this.chkCoupons.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkCoupons.Location = new System.Drawing.Point(8, 126);
-            this.chkCoupons.Name = "chkCoupons";
-            this.chkCoupons.Size = new System.Drawing.Size(151, 23);
-            this.chkCoupons.TabIndex = 0;
-            this.chkCoupons.Text = "Cupones de pago";
-            this.chkCoupons.UseVisualStyleBackColor = true;
-            this.chkCoupons.CheckedChanged += new System.EventHandler(this.chkCoupons_CheckedChanged);
-            // 
-            // pbCoupons
-            // 
-            this.pbCoupons.Location = new System.Drawing.Point(195, 124);
-            this.pbCoupons.Name = "pbCoupons";
-            this.pbCoupons.Size = new System.Drawing.Size(25, 25);
-            this.pbCoupons.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbCoupons.TabIndex = 6;
-            this.pbCoupons.TabStop = false;
-            // 
-            // chkInvoice
-            // 
-            this.chkInvoice.AutoSize = true;
-            this.chkInvoice.Enabled = false;
-            this.chkInvoice.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkInvoice.Location = new System.Drawing.Point(8, 159);
-            this.chkInvoice.Name = "chkInvoice";
-            this.chkInvoice.Size = new System.Drawing.Size(82, 23);
-            this.chkInvoice.TabIndex = 0;
-            this.chkInvoice.Text = "Factura";
-            this.chkInvoice.UseVisualStyleBackColor = true;
-            this.chkInvoice.CheckedChanged += new System.EventHandler(this.chkInvoice_CheckedChanged);
-            // 
-            // pbInvoice
-            // 
-            this.pbInvoice.Location = new System.Drawing.Point(195, 157);
-            this.pbInvoice.Name = "pbInvoice";
-            this.pbInvoice.Size = new System.Drawing.Size(25, 25);
-            this.pbInvoice.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbInvoice.TabIndex = 6;
-            this.pbInvoice.TabStop = false;
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -320,11 +320,11 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
