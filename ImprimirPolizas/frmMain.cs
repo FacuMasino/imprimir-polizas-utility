@@ -158,9 +158,10 @@ namespace ImprimirPolizas
         private async Task NotifyInvoiceRequired(string policyNumber)
         {
             if (!await ScTools.requiresInvoice(policyNumber)) return;
+            GetFocused(); // traer ventana al frente
             string actualAction = rbPrint.Checked ? "imprimir" : "descargar";
             DialogResult result = MessageBox.Show("La categoría del socio es R.I o Monotributo\n" +
-                            $"Desea {actualAction} la Factura?", "Aviso", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            $"Desea {actualAction} la Factura?", "Aviso", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
             if (result == DialogResult.No) return;
             ScTools.DownloadOpt opt = ScTools.DownloadOpt.invoice;
             try
@@ -196,8 +197,10 @@ namespace ImprimirPolizas
             EnableControls(this, false); // deshabilitar mientras carga
             bool hasFailed = false;
             List<Task> printTasks = new List<Task>();
-            if (!chkInvoice.Checked)
+            if (!chkInvoice.Checked) // Verifica solo si no fue seleccionada la opción Factura
             {
+                // Se agrega una tarea a la lista que debe ser esperada para habilitar
+                // de nuevo el formulario y el botón imprimir/descargar
                 printTasks.Add(Task.Run(async () => await NotifyInvoiceRequired(pcNumber)));
             }
             for (int i = 0; i < options.Length; i++)
@@ -220,6 +223,8 @@ namespace ImprimirPolizas
                                 PrintPDF(filePath);
                             }
                             SetIconStatus(opt, IconState.Ready);
+                            // Se actualizan las estadísticas pero sin esperar respuesta
+                            _ = ScTools.UpdateStats(opt == ScTools.DownloadOpt.policy, rbPrint.Checked);
                         }
                         catch (Exception ex)
                         {
@@ -304,6 +309,22 @@ namespace ImprimirPolizas
                         delegate
                         {
                             chk.Checked = check;
+                        }
+                    )
+                )
+            );
+        }
+
+        // Permite traer la ventana al frente desde
+        // un subproceso iniciado por una Task.
+        private void GetFocused()
+        {
+            this.Invoke(
+                (
+                    new MethodInvoker(
+                        delegate
+                        {
+                            this.Activate();
                         }
                     )
                 )
@@ -423,5 +444,6 @@ namespace ImprimirPolizas
                 options[4] = 0;
             }
         }
+
     }
 }

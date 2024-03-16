@@ -158,5 +158,30 @@ namespace ImprimirPolizas
                     return "Desconocido";
             }
         }
+
+        public static async Task UpdateStats(bool isPolicy, bool isPrint)
+        {
+            string statType = isPrint ? "newprint" : "newdownload";
+            string policyParam = isPolicy ? "true" : "false";
+            string baseUrl = $"{_baseUrl}stats/{statType}?isPolicy={policyParam}";
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    using (HttpResponseMessage res = await client.GetAsync(baseUrl))
+                    {
+                        using (HttpContent content = res.Content)
+                        {
+                            var resData = await content.ReadAsStringAsync();
+                            Debug.WriteLine(resData);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return;
+            }
+        }
     }
 }
