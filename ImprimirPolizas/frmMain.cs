@@ -7,10 +7,13 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DeviceId;
+using DeviceId.Windows;
 using Newtonsoft.Json.Linq;
 using PdfiumViewer;
 using Segment.Analytics;
 using Segment.Serialization;
+
 using static ImprimirPolizas.ScTools;
 
 namespace ImprimirPolizas
@@ -30,6 +33,10 @@ namespace ImprimirPolizas
         flushInterval: 30);
         Analytics analytics = new Analytics(SegmentConfig);
 
+        string deviceId = new DeviceIdBuilder()
+            .OnWindows(windows => windows.AddWindowsDeviceId())
+            .ToString();
+
         public frmMain()
         {
             InitializeComponent();
@@ -37,7 +44,10 @@ namespace ImprimirPolizas
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            analytics.Track("app_open");
+            analytics.Track("app_open", new JsonObject
+            {
+                ["anonymousId"] = deviceId,
+            });
             EnableWhenReady(); // Verificar disponibilidad servidor
             // Habilitar opciones iniciales
             options[0] = (int)ScTools.DownloadOpt.policy;
@@ -426,7 +436,10 @@ namespace ImprimirPolizas
 
         private void LnkDownloads_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            analytics.Track("btn_download_click");
+            analytics.Track("btn_download_click", new JsonObject
+            {
+                ["anonymousId"] = deviceId,
+            });
             OpenDownloadsFolder();
         }
 
@@ -462,6 +475,7 @@ namespace ImprimirPolizas
             eventName += GetDocName(opt);
             analytics.Track(eventName, new JsonObject
             {
+                ["anonymousId"] = deviceId,
                 ["document"] = GetDocName(opt),
             });
         }
