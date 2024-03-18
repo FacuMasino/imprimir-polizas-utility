@@ -7,7 +7,11 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 using PdfiumViewer;
+using Segment.Analytics;
+using Segment.Serialization;
+using static ImprimirPolizas.ScTools;
 
 namespace ImprimirPolizas
 {
@@ -21,6 +25,10 @@ namespace ImprimirPolizas
             Ready = 1,
             Error = 2,
         }
+        static readonly Configuration SegmentConfig = new Configuration("3agF8DVa82eZaBk1GYxaiYqhAi2f9fv1",
+        flushAt: 20,
+        flushInterval: 30);
+        Analytics analytics = new Analytics(SegmentConfig);
 
         public frmMain()
         {
@@ -29,6 +37,7 @@ namespace ImprimirPolizas
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            analytics.Track("app_open");
             EnableWhenReady(); // Verificar disponibilidad servidor
             // Habilitar opciones iniciales
             options[0] = (int)ScTools.DownloadOpt.policy;
@@ -225,6 +234,7 @@ namespace ImprimirPolizas
                             SetIconStatus(opt, IconState.Ready);
                             // Se actualizan las estadísticas pero sin esperar respuesta
                             _ = ScTools.UpdateStats(opt == ScTools.DownloadOpt.policy, rbPrint.Checked);
+                            TrackAction(opt, rbPrint.Checked); // Send Analytics
                         }
                         catch (Exception ex)
                         {
@@ -268,7 +278,7 @@ namespace ImprimirPolizas
                 case ScTools.DownloadOpt.policyCard:
                     pbCard.Image = img;
                     break;
-                case ScTools.DownloadOpt.paymentProof:
+                case ScTools.DownloadOpt.paymentReceipt:
                     pbPayment.Image = img;
                     break;
                 case ScTools.DownloadOpt.coupons:
@@ -362,7 +372,7 @@ namespace ImprimirPolizas
             EnableBtnPrint();
             if (chkPaymentProof.Checked)
             {
-                options[2] = (int)ScTools.DownloadOpt.paymentProof;
+                options[2] = (int)ScTools.DownloadOpt.paymentReceipt;
             }
             else
             {
@@ -416,6 +426,7 @@ namespace ImprimirPolizas
 
         private void LnkDownloads_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+            analytics.Track("btn_download_click");
             OpenDownloadsFolder();
         }
 
@@ -443,6 +454,43 @@ namespace ImprimirPolizas
             {
                 options[4] = 0;
             }
+        }
+
+        private void TrackAction(ScTools.DownloadOpt opt,  bool isPrinting)
+        {
+            string eventName = isPrinting ? "print_" : "download_";
+            eventName += GetDocName(opt);
+            analytics.Track(eventName, new JsonObject
+            {
+                ["document"] = GetDocName(opt),
+            });
+        }
+
+        private string GetDocName(ScTools.DownloadOpt opt)
+        {
+            string docName;
+            switch (opt)
+            {
+                case DownloadOpt.policy:
+                    docName = "policy";
+                    break;
+                case DownloadOpt.paymentReceipt:
+                    docName = "paymentReceipt";
+                    break;
+                case DownloadOpt.policyCard:
+                    docName = "policyCard";
+                    break;
+                case DownloadOpt.coupons:
+                    docName = "coupons";
+                    break;
+                case DownloadOpt.invoice:
+                    docName = "invoice";
+                    break;
+                default:
+                    docName = "unknown";
+                    break;
+            }
+            return docName;
         }
 
     }

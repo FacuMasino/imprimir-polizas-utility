@@ -26,7 +26,7 @@ namespace ImprimirPolizas
             policy = 1,
             policyCard = 2,
             paymentTC = 3,
-            paymentProof = 5,
+            paymentReceipt = 5,
             coupons = 6,
             invoice = 7,
         }
@@ -99,7 +99,7 @@ namespace ImprimirPolizas
                 case DownloadOpt.policy:
                     fileName += "FrentePoliza.pdf";
                     break;
-                case DownloadOpt.paymentProof:
+                case DownloadOpt.paymentReceipt:
                     fileName += "ComprobantePago.pdf";
                     break;
                 case DownloadOpt.policyCard:
@@ -146,7 +146,7 @@ namespace ImprimirPolizas
             {
                 case ScTools.DownloadOpt.policy:
                     return "Frente de póliza";
-                case ScTools.DownloadOpt.paymentProof:
+                case ScTools.DownloadOpt.paymentReceipt:
                     return "Comprobante de pago";
                 case ScTools.DownloadOpt.policyCard:
                     return "Tarjeta Seguro Obligatorio";
