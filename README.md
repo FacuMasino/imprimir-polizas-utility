@@ -11,4 +11,4 @@ Mirá las estadísticas:
 ![printed-docs](https://imprimir-polizas-contador.vercel.app/stats-printed-docs.svg)
 ![downloaded-docs](https://imprimir-polizas-contador.vercel.app/stats-downloaded-docs.svg)
 
-![Untitled-1](https://github.com/FacuMasino/imprimir-polizas-utility/assets/13455216/9dc7236a-5356-4c36-b88f-bc437fc1cae4)
+![729shots_so](https://github.com/FacuMasino/imprimir-polizas-utility/assets/13455216/5a1d98c1-2798-49e4-a0b1-1b008c236345)
