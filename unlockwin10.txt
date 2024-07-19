@@ -1,0 +1,2 @@
+Powershell command to unblock all unstrusted files from downloaded folder:
+get-childitem "full path of folder" | unblock-file
