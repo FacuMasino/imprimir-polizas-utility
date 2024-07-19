@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DeviceId;
@@ -13,7 +14,6 @@ using Newtonsoft.Json.Linq;
 using PdfiumViewer;
 using Segment.Analytics;
 using Segment.Serialization;
-
 using static ImprimirPolizas.ScTools;
 
 namespace ImprimirPolizas
@@ -21,16 +21,24 @@ namespace ImprimirPolizas
     public partial class frmMain : Form
     {
         private int[] options = new int[5];
-        private readonly string downloadFolder = Path.Combine(Directory.GetCurrentDirectory(), "descargas");
+        private readonly string downloadFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "descargas"
+        );
+        public CancellationTokenSource cts; // Token para cancelar las tareas
+
         private enum IconState
         {
             Loading = 0,
             Ready = 1,
             Error = 2,
         }
-        static readonly Configuration SegmentConfig = new Configuration("3agF8DVa82eZaBk1GYxaiYqhAi2f9fv1",
-        flushAt: 20,
-        flushInterval: 30);
+
+        static readonly Configuration SegmentConfig = new Configuration(
+            "3agF8DVa82eZaBk1GYxaiYqhAi2f9fv1",
+            flushAt: 20,
+            flushInterval: 30
+        );
         Analytics analytics = new Analytics(SegmentConfig);
 
         string deviceId = new DeviceIdBuilder()
@@ -44,10 +52,7 @@ namespace ImprimirPolizas
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            analytics.Track("app_open", new JsonObject
-            {
-                ["anonymousId"] = deviceId,
-            });
+            analytics.Track("app_open", new JsonObject { ["anonymousId"] = deviceId, });
             EnableWhenReady(); // Verificar disponibilidad servidor
             // Habilitar opciones iniciales
             options[0] = (int)ScTools.DownloadOpt.policy;
@@ -86,14 +91,17 @@ namespace ImprimirPolizas
             foreach (Control ctrl in control.Controls)
             {
                 // Si es label de status, saltar
-                if (ctrl.Equals(lblStatus) || ctrl.Equals(label1)) continue;
-                if (ctrl is PictureBox) continue;
+                if (ctrl.Equals(lblStatus) || ctrl.Equals(label1))
+                    continue;
+                if (ctrl is PictureBox)
+                    continue;
                 // Si es un groupbox, recorrer controles
                 if (ctrl is GroupBox)
                 {
                     foreach (Control ctrlGB in ctrl.Controls)
                     {
-                        if (ctrlGB is PictureBox) continue;
+                        if (ctrlGB is PictureBox)
+                            continue;
                         ctrlGB.Enabled = setEnabled;
                     }
                 }
@@ -104,13 +112,16 @@ namespace ImprimirPolizas
             }
         }
 
-        private void ResetAllStatus()
+        private void ResetAllStatus(bool wait = true)
         {
             // Resetear iconos y estado esperando 5 seg
             // De forma asíncrona sin bloquear UI
             Task.Run(async () =>
             {
-                await Task.Delay(4000);
+                if (wait)
+                {
+                    await Task.Delay(4000);
+                }
                 pbPolicy.Image = null;
                 pbCard.Image = null;
                 pbPayment.Image = null;
@@ -174,24 +185,46 @@ namespace ImprimirPolizas
                 EnableBtnPrint();
             }
         }
+
         private async Task NotifyInvoiceRequired(string policyNumber)
         {
-            if (!await ScTools.requiresInvoice(policyNumber)) return;
+            try
+            {
+                if (!await ScTools.requiresInvoice(policyNumber, cts.Token))
+                    return;
+            }
+            catch (OperationCanceledException)
+            {
+                return; // ignorar si se cancela
+            }
+
             GetFocused(); // traer ventana al frente
             string actualAction = rbPrint.Checked ? "imprimir" : "descargar";
-            DialogResult result = MessageBox.Show("La categoría del socio es R.I o Monotributo\n" +
-                            $"Desea {actualAction} la Factura?", "Aviso", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
-            if (result == DialogResult.No) return;
+            DialogResult result = MessageBox.Show(
+                "La categoría del socio es R.I o Monotributo\n"
+                    + $"Desea {actualAction} la Factura?",
+                "Aviso",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button1,
+                MessageBoxOptions.DefaultDesktopOnly
+            );
+            if (result == DialogResult.No)
+                return;
             ScTools.DownloadOpt opt = ScTools.DownloadOpt.invoice;
             try
             {
+                cts.Token.ThrowIfCancellationRequested();
                 ChangeCheckFromTask(chkInvoice, true);
                 SetIconStatus(ScTools.DownloadOpt.invoice, IconState.Loading);
-                await ScTools.DownloadDocAsync(policyNumber, 1, opt, downloadFolder);
+                await ScTools.DownloadDocAsync(policyNumber, 1, opt, downloadFolder, cts.Token);
                 if (rbPrint.Checked)
                 {
                     ChangeStatusFromTask("Imprimiendo " + ScTools.GetOptionName(opt) + "...");
-                    string filePath = Path.Combine(downloadFolder, ScTools.GetFileName(policyNumber, opt));
+                    string filePath = Path.Combine(
+                        downloadFolder,
+                        ScTools.GetFileName(policyNumber, opt)
+                    );
                     PrintPDF(filePath);
                 }
                 SetIconStatus(opt, IconState.Ready);
@@ -199,29 +232,38 @@ namespace ImprimirPolizas
             catch (Exception ex)
             {
                 SetIconStatus(opt, IconState.Error);
-                MessageBox.Show(
-                    ex.Message,
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
+
         private async void BtnPrint_Click(object sender, EventArgs e)
         {
+            if (btnPrint.Text == "CANCELAR")
+            {
+                cts.Cancel(); // Cancelar todo
+                return;
+            }
             string pcNumber = txtPolicy.Text;
             lblStatus.ForeColor = Color.Black;
-            btnPrint.Text = "Aguarde...";
-            EnableControls(this, false); // deshabilitar mientras carga
+
+            btnPrint.Text = "CANCELAR";
             bool hasFailed = false;
+
+            // Resetear token si ya se usó
+            cts?.Dispose();
+            // Crea nuevo token
+            cts = new CancellationTokenSource();
+
             List<Task> printTasks = new List<Task>();
             if (!chkInvoice.Checked) // Verifica solo si no fue seleccionada la opción Factura
             {
                 // Se agrega una tarea a la lista que debe ser esperada para habilitar
                 // de nuevo el formulario y el botón imprimir/descargar
-                printTasks.Add(Task.Run(async () => await NotifyInvoiceRequired(pcNumber)));
+                printTasks.Add(
+                    Task.Run(async () => await NotifyInvoiceRequired(pcNumber), cts.Token)
+                );
             }
+
             for (int i = 0; i < options.Length; i++)
             {
                 if (options[i] == 0)
@@ -229,38 +271,65 @@ namespace ImprimirPolizas
                 ScTools.DownloadOpt opt = (ScTools.DownloadOpt)options[i];
                 lblStatus.Text = "Descargando archivos...";
                 printTasks.Add(
-                    Task.Run(async () =>
-                    {
-                        try
+                    Task.Run(
+                        async () =>
                         {
-                            SetIconStatus(opt, IconState.Loading);
-                            await ScTools.DownloadDocAsync(pcNumber, 1, opt, downloadFolder);
-                            if (rbPrint.Checked)
+                            try
                             {
-                                ChangeStatusFromTask("Imprimiendo " + ScTools.GetOptionName(opt) + "...");
-                                string filePath = Path.Combine(downloadFolder, ScTools.GetFileName(pcNumber, opt));
-                                PrintPDF(filePath);
-                            }
-                            SetIconStatus(opt, IconState.Ready);
-                            // Se actualizan las estadísticas pero sin esperar respuesta
-                            _ = ScTools.UpdateStats(opt == ScTools.DownloadOpt.policy, rbPrint.Checked);
-                            TrackAction(opt, rbPrint.Checked); // Send Analytics
-                        }
-                        catch (Exception ex)
-                        {
-                            SetIconStatus(opt, IconState.Error);
-                            if (!hasFailed)
-                            {
-                                hasFailed = true;
-                                MessageBox.Show(
-                                    ex.Message,
-                                    "Error",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error
+                                cts.Token.ThrowIfCancellationRequested();
+
+                                SetIconStatus(opt, IconState.Loading);
+
+                                await ScTools.DownloadDocAsync(
+                                    pcNumber,
+                                    1,
+                                    opt,
+                                    downloadFolder,
+                                    cts.Token
                                 );
+
+                                if (rbPrint.Checked)
+                                {
+                                    ChangeStatusFromTask(
+                                        "Imprimiendo " + ScTools.GetOptionName(opt) + "..."
+                                    );
+                                    string filePath = Path.Combine(
+                                        downloadFolder,
+                                        ScTools.GetFileName(pcNumber, opt)
+                                    );
+                                    PrintPDF(filePath);
+                                }
+
+                                SetIconStatus(opt, IconState.Ready);
+                                // Se actualizan las estadísticas pero sin esperar respuesta
+                                _ = ScTools.UpdateStats(
+                                    opt == ScTools.DownloadOpt.policy,
+                                    rbPrint.Checked,
+                                    cts.Token
+                                );
+                                TrackAction(opt, rbPrint.Checked); // Send Analytics
                             }
-                        }
-                    })
+                            catch (OperationCanceledException)
+                            {
+                                ChangeStatusFromTask("Operación Cancelada.");
+                            }
+                            catch (Exception ex)
+                            {
+                                SetIconStatus(opt, IconState.Error);
+                                if (!hasFailed) // Muestra el mensaje de error solo la 1er vez que falla
+                                {
+                                    hasFailed = true;
+                                    MessageBox.Show(
+                                        ex.Message,
+                                        "Error",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Error
+                                    );
+                                }
+                            }
+                        },
+                        cts.Token
+                    )
                 );
             }
             // Esperar que terminen todas las tasks
@@ -268,18 +337,22 @@ namespace ImprimirPolizas
             btnPrint.Text = rbPrint.Checked ? "IMPRIMIR" : "DESCARGAR";
             lblStatus.Text = hasFailed ? "Error" : "Listo";
             lblStatus.ForeColor = hasFailed ? Color.Red : Color.Green;
-            if (!hasFailed && !lnkDownloads.Visible) lnkDownloads.Visible = true;
-            EnableControls(this, true);
-            ResetAllStatus(); // Reset de iconos y estado
-        }
-        private void OnFrameChanged(object sender, EventArgs args)
-        {
+
+            if (cts.IsCancellationRequested)
+            {
+                lblStatus.Text = "Operación Cancelada.";
+                lblStatus.ForeColor = Color.Red;
+            }
+            if (!hasFailed && !cts.IsCancellationRequested && !lnkDownloads.Visible)
+                lnkDownloads.Visible = true;
+            ResetAllStatus(!cts.IsCancellationRequested); // Reset de iconos y estado
         }
 
         private void SetIconStatus(ScTools.DownloadOpt opt, IconState icon)
         {
             var img = iconsList.Images[(int)icon];
-            if (icon == IconState.Loading) img = Properties.Resources.loading;
+            if (icon == IconState.Loading)
+                img = Properties.Resources.loading;
             switch (opt)
             {
                 case ScTools.DownloadOpt.policy:
@@ -400,7 +473,8 @@ namespace ImprimirPolizas
             foreach (Control ctrl in groupBox2.Controls)
             {
                 // Si no es CheckBox, continuar con otro
-                if (!(ctrl is CheckBox)) continue;
+                if (!(ctrl is CheckBox))
+                    continue;
                 if (((CheckBox)ctrl).Checked)
                 {
                     totalChecked++;
@@ -421,25 +495,25 @@ namespace ImprimirPolizas
 
         private void RbPrint_CheckedChanged(object sender, EventArgs e)
         {
-            if(rbPrint.Checked) btnPrint.Text = "IMPRIMIR";
+            if (rbPrint.Checked)
+                btnPrint.Text = "IMPRIMIR";
         }
 
         private void RbDownload_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbDownload.Checked) btnPrint.Text = "DESCARGAR";
+            if (rbDownload.Checked)
+                btnPrint.Text = "DESCARGAR";
         }
 
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (Directory.Exists(downloadFolder)) Directory.Delete(downloadFolder, true);
+            if (Directory.Exists(downloadFolder))
+                Directory.Delete(downloadFolder, true);
         }
 
         private void LnkDownloads_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            analytics.Track("btn_download_click", new JsonObject
-            {
-                ["anonymousId"] = deviceId,
-            });
+            analytics.Track("btn_download_click", new JsonObject { ["anonymousId"] = deviceId, });
             OpenDownloadsFolder();
         }
 
@@ -458,7 +532,8 @@ namespace ImprimirPolizas
 
         private void chkInvoice_CheckedChanged(object sender, EventArgs e)
         {
-            if(btnPrint.Text != "Aguarde...") EnableBtnPrint();
+            if (btnPrint.Text != "Aguarde...")
+                EnableBtnPrint();
             if (chkInvoice.Checked)
             {
                 options[4] = (int)ScTools.DownloadOpt.invoice;
@@ -469,15 +544,14 @@ namespace ImprimirPolizas
             }
         }
 
-        private void TrackAction(ScTools.DownloadOpt opt,  bool isPrinting)
+        private void TrackAction(ScTools.DownloadOpt opt, bool isPrinting)
         {
             string eventName = isPrinting ? "print_" : "download_";
             eventName += GetDocName(opt);
-            analytics.Track(eventName, new JsonObject
-            {
-                ["anonymousId"] = deviceId,
-                ["document"] = GetDocName(opt),
-            });
+            analytics.Track(
+                eventName,
+                new JsonObject { ["anonymousId"] = deviceId, ["document"] = GetDocName(opt), }
+            );
         }
 
         private string GetDocName(ScTools.DownloadOpt opt)
@@ -506,6 +580,5 @@ namespace ImprimirPolizas
             }
             return docName;
         }
-
     }
 }

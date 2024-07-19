@@ -1,12 +1,14 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Permissions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using AutoUpdaterDotNET;
+using Newtonsoft.Json.Linq;
 
 namespace ImprimirPolizas
 {
@@ -53,25 +55,65 @@ namespace ImprimirPolizas
             string pcNumber,
             int vhNumber,
             DownloadOpt opt,
-            string folderPath
+            string folderPath,
+            CancellationToken cancellationToken
         )
         {
             string fileName = GetFileName(pcNumber, opt);
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 using (var client = new WebClient())
                 {
-                    Debug.Print(Path.Combine(folderPath, fileName));
-                    await client.DownloadFileTaskAsync(
-                        new Uri(
+                    var tcs = new TaskCompletionSource<bool>();
+
+                    using (cancellationToken.Register(client.CancelAsync))
+                    {
+                        client.DownloadFileCompleted += (sender, args) =>
+                        {
+                            if (args.Cancelled)
+                            {
+                                tcs.TrySetCanceled();
+                            }
+                            else if (args.Error != null)
+                            {
+                                tcs.TrySetException(args.Error);
+                            }
+                            else
+                            {
+                                tcs.TrySetResult(true);
+                            }
+                        };
+
+                        client.DownloadFileAsync(
+                            new Uri(
+                                $"{_baseUrl}getBinaryAnnual?pcN={pcNumber}&vhN={vhNumber}&opt={(int)opt}"
+                            ),
+                            Path.Combine(folderPath, fileName)
+                        );
+
+                        Debug.Print(
                             $"{_baseUrl}getBinaryAnnual?pcN={pcNumber}&vhN={vhNumber}&opt={(int)opt}"
-                        ),
-                        Path.Combine(folderPath, fileName)
-                    );
-                    Debug.Print(
-                        $"{_baseUrl}getBinaryAnnual?pcN={pcNumber}&vhN={vhNumber}&opt={(int)opt}"
-                    );
+                        );
+
+                        await tcs.Task;
+                    }
                 }
+            }
+            catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+            {
+                throw new OperationCanceledException();
+            }
+            catch (AggregateException ex)
+                when (ex.InnerException is WebException exWeb
+                    && exWeb.Status == WebExceptionStatus.RequestCanceled
+                )
+            {
+                throw new OperationCanceledException();
+            }
+            catch (TaskCanceledException)
+            {
+                throw new OperationCanceledException();
             }
             catch (Exception e)
             {
@@ -118,25 +160,45 @@ namespace ImprimirPolizas
             return fileName;
         }
 
-        public static async Task<bool> requiresInvoice(string policyNumber)
+        public static async Task<bool> requiresInvoice(
+            string policyNumber,
+            CancellationToken ctsToken
+        )
         {
             string baseUrl = $"{_baseUrl}requiresInvoice?pcN={policyNumber}";
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    using (HttpResponseMessage res = await client.GetAsync(baseUrl))
+                    using (HttpResponseMessage res = await client.GetAsync(baseUrl, ctsToken))
                     {
                         using (HttpContent content = res.Content)
                         {
                             var resData = await content.ReadAsStringAsync();
-                            //MessageBox.Show(resData);
+                            // MessageBox.Show(resData);
                             return ((bool)JObject.Parse(resData)["requiresInvoice"]) || false;
                         }
                     }
                 }
-            } catch {
-                return false;
+            }
+            catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+            {
+                throw new OperationCanceledException();
+            }
+            catch (AggregateException ex)
+                when (ex.InnerException is WebException exWeb
+                    && exWeb.Status == WebExceptionStatus.RequestCanceled
+                )
+            {
+                throw new OperationCanceledException();
+            }
+            catch (TaskCanceledException)
+            {
+                throw new OperationCanceledException();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -159,11 +221,16 @@ namespace ImprimirPolizas
             }
         }
 
-        public static async Task UpdateStats(bool isPolicy, bool isPrint)
+        public static async Task UpdateStats(
+            bool isPolicy,
+            bool isPrint,
+            CancellationToken ctsToken
+        )
         {
             string statType = isPrint ? "newprint" : "newdownload";
             string policyParam = isPolicy ? "true" : "false";
             string baseUrl = $"{_baseUrl}stats/{statType}?isPolicy={policyParam}";
+            ctsToken.ThrowIfCancellationRequested();
             try
             {
                 using (HttpClient client = new HttpClient())
