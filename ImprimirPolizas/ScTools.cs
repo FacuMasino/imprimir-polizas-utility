@@ -174,6 +174,12 @@ namespace ImprimirPolizas
                     {
                         using (HttpContent content = res.Content)
                         {
+                            if (res.StatusCode != HttpStatusCode.OK)
+                            {
+                                throw new Exception(
+                                    "Error en la solicitud al servidor, no se pudo obtener la condición fiscal."
+                                );
+                            }
                             var resData = await content.ReadAsStringAsync();
                             // MessageBox.Show(resData);
                             return ((bool)JObject.Parse(resData)["requiresInvoice"]) || false;

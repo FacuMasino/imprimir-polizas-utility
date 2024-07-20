@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,6 +58,9 @@ namespace ImprimirPolizas
             // Habilitar opciones iniciales
             options[0] = (int)ScTools.DownloadOpt.policy;
             options[1] = (int)ScTools.DownloadOpt.policyCard;
+
+            string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            this.Text += $" - v{assemblyVersion}";
         }
 
         private async void EnableWhenReady()
@@ -188,32 +192,27 @@ namespace ImprimirPolizas
 
         private async Task NotifyInvoiceRequired(string policyNumber)
         {
+            ScTools.DownloadOpt opt = ScTools.DownloadOpt.invoice;
+
             try
             {
                 if (!await ScTools.requiresInvoice(policyNumber, cts.Token))
                     return;
-            }
-            catch (OperationCanceledException)
-            {
-                return; // ignorar si se cancela
-            }
 
-            GetFocused(); // traer ventana al frente
-            string actualAction = rbPrint.Checked ? "imprimir" : "descargar";
-            DialogResult result = MessageBox.Show(
-                "La categoría del socio es R.I o Monotributo\n"
-                    + $"Desea {actualAction} la Factura?",
-                "Aviso",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button1,
-                MessageBoxOptions.DefaultDesktopOnly
-            );
-            if (result == DialogResult.No)
-                return;
-            ScTools.DownloadOpt opt = ScTools.DownloadOpt.invoice;
-            try
-            {
+                GetFocused(); // traer ventana al frente
+                string actualAction = rbPrint.Checked ? "imprimir" : "descargar";
+                DialogResult result = MessageBox.Show(
+                    "La categoría del socio es R.I o Monotributo\n"
+                        + $"Desea {actualAction} la Factura?",
+                    "Aviso",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button1,
+                    MessageBoxOptions.DefaultDesktopOnly
+                );
+                if (result == DialogResult.No)
+                    return;
+
                 cts.Token.ThrowIfCancellationRequested();
                 ChangeCheckFromTask(chkInvoice, true);
                 SetIconStatus(ScTools.DownloadOpt.invoice, IconState.Loading);
@@ -229,9 +228,16 @@ namespace ImprimirPolizas
                 }
                 SetIconStatus(opt, IconState.Ready);
             }
+            catch (OperationCanceledException)
+            {
+                return; // ignorar si se cancela
+            }
             catch (Exception ex)
             {
-                SetIconStatus(opt, IconState.Error);
+                if (rbPrint.Checked)
+                {
+                    SetIconStatus(opt, IconState.Error);
+                }
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
