@@ -95,7 +95,7 @@ namespace ImprimirPolizas
             foreach (Control ctrl in control.Controls)
             {
                 // Si es label de status, saltar
-                if (ctrl.Equals(lblStatus) || ctrl.Equals(label1))
+                if (ctrl.Equals(lblStatus) || ctrl.Equals(label1) || ctrl.Equals(btnPrint))
                     continue;
                 if (ctrl is PictureBox)
                     continue;
@@ -247,11 +247,12 @@ namespace ImprimirPolizas
             if (btnPrint.Text == "CANCELAR")
             {
                 cts.Cancel(); // Cancelar todo
+                EnableControls(this, true); // rehabilitar controles
                 return;
             }
             string pcNumber = txtPolicy.Text;
             lblStatus.ForeColor = Color.Black;
-
+            EnableControls(this, false); // deshabilitar controles
             btnPrint.Text = "CANCELAR";
             bool hasFailed = false;
 
@@ -352,6 +353,7 @@ namespace ImprimirPolizas
             if (!hasFailed && !cts.IsCancellationRequested && !lnkDownloads.Visible)
                 lnkDownloads.Visible = true;
             ResetAllStatus(!cts.IsCancellationRequested); // Reset de iconos y estado
+            EnableControls(this, true); // rehabilitar controles
         }
 
         private void SetIconStatus(ScTools.DownloadOpt opt, IconState icon)
