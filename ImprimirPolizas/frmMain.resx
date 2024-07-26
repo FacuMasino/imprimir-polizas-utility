@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="ttpMain.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>113, 5</value>
+  </metadata>
   <metadata name="iconsList.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>13, 17</value>
   </metadata>
@@ -125,7 +128,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAO
-        GQAAAk1TRnQBSQFMAgEBAwEAATgBAAE4AQABGQEAARkBAAT/AREBAAj/AUIBTQE2BwABNgMAASgDAAFk
+        GQAAAk1TRnQBSQFMAgEBAwEAAUABAAFAAQABGQEAARkBAAT/AREBAAj/AUIBTQE2BwABNgMAASgDAAFk
         AwABGQMAAQEBAAEQBQABiAETEgAB3gF7Ad4BewHeAXsB3gF7Ad4BewHeAXsB3gF7Ad4BewHeAXsB3gF7
         Ad4BewHeAXsB3gF7Ad4BewHeAXsB3gF7Ad4BewHeAXsB3gF7Ad4BewHeAXsB3gF7Ad4BewHeAXsB3gF7
         DgAB/wF/AboBawFxAUcBKAEjAeIBCgHgAQIB4gEKASgBIwFxAUcBugFrAf8BfxQAAaUBUAEAAXQhAAFw

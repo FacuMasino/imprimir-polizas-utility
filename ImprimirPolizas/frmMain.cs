@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using DeviceId;
 using DeviceId.Windows;
+using IronPdf;
 using Newtonsoft.Json.Linq;
 using PdfiumViewer;
 using Segment.Analytics;
@@ -118,6 +121,8 @@ namespace ImprimirPolizas
 
         private void ResetAllStatus(bool wait = true)
         {
+            lblStatus.Text = "Listo";
+            lblStatus.ForeColor = Color.Green;
             // Resetear iconos y estado esperando 5 seg
             // De forma asíncrona sin bloquear UI
             Task.Run(async () =>
@@ -131,8 +136,6 @@ namespace ImprimirPolizas
                 pbPayment.Image = null;
                 pbCoupons.Image = null;
                 pbInvoice.Image = null;
-                lblStatus.Text = "Listo";
-                lblStatus.ForeColor = Color.Green;
             });
         }
 
@@ -162,7 +165,7 @@ namespace ImprimirPolizas
 
             // Cargar PDF
             // using se asegura que el archivo sea cerrado incluso si hay un error
-            using (var doc = PdfDocument.Load(filePath))
+            using (var doc = PdfiumViewer.PdfDocument.Load(filePath))
             {
                 using (var printDocument = doc.CreatePrintDocument())
                 {
@@ -351,7 +354,10 @@ namespace ImprimirPolizas
                 lblStatus.ForeColor = Color.Red;
             }
             if (!hasFailed && !cts.IsCancellationRequested && !lnkDownloads.Visible)
+            {
                 lnkDownloads.Visible = true;
+                lnkLblCopyDocs.Visible = true;
+            }
             ResetAllStatus(!cts.IsCancellationRequested); // Reset de iconos y estado
             EnableControls(this, true); // rehabilitar controles
         }
@@ -587,6 +593,84 @@ namespace ImprimirPolizas
                     break;
             }
             return docName;
+        }
+
+        private void lnkLblCopyDocs_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            EnableControls(this, false);
+            lblStatus.ForeColor = Color.Black;
+            lblStatus.Text = "Copiando documentos...";
+            lblStatus.Refresh();
+            ConvertDownloadedDocs();
+            CopyDownloadedDocs();
+            EnableControls(this, true);
+            lblStatus.Text = "Listo";
+            lblStatus.ForeColor = Color.Green;
+        }
+
+        private void ConvertDownloadedDocs()
+        {
+            lblStatus.Text = "Copiando documentos...";
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (options[i] == 0)
+                    continue;
+
+                ScTools.DownloadOpt opt = (ScTools.DownloadOpt)options[i];
+                string filePath = Path.Combine(
+                    downloadFolder,
+                    ScTools.GetFileName(txtPolicy.Text, opt)
+                );
+
+                if (new FileInfo(filePath).Length == 0)
+                {
+                    // Archivo vacío
+                    continue;
+                }
+
+                ConvertPdf(filePath);
+            }
+        }
+
+        private void CopyDownloadedDocs()
+        {
+            StringCollection docsPathList = new StringCollection();
+
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (options[i] == 0)
+                    continue;
+
+                ScTools.DownloadOpt opt = (ScTools.DownloadOpt)options[i];
+                string filePath = Path.Combine(
+                    downloadFolder,
+                    ScTools.GetFileName(txtPolicy.Text, opt)
+                );
+
+                if (new FileInfo(filePath).Length == 0)
+                {
+                    // Archivo vacío
+                    continue;
+                }
+
+                docsPathList.Add(filePath + ".png");
+            }
+
+            Clipboard.SetFileDropList(docsPathList);
+        }
+
+        private void ConvertPdf(string filePath)
+        {
+            IronPdf.PdfDocument pdf = IronPdf.PdfDocument.FromFile(filePath);
+            IEnumerable<int> pageIndexes = Enumerable.Range(0, 1);
+            pdf.RasterizeToImageFiles(
+                filePath + ".png",
+                pageIndexes,
+                2550,
+                1950,
+                IronPdf.Imaging.ImageType.Png,
+                300
+            );
         }
     }
 }

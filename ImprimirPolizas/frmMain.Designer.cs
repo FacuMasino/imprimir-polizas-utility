@@ -50,6 +50,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.iconsList = new System.Windows.Forms.ImageList(this.components);
             this.lnkDownloads = new System.Windows.Forms.LinkLabel();
+            this.lnkLblCopyDocs = new System.Windows.Forms.LinkLabel();
+            this.ttpMain = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).BeginInit();
@@ -158,6 +160,8 @@
             this.rbDownload.Size = new System.Drawing.Size(127, 22);
             this.rbDownload.TabIndex = 2;
             this.rbDownload.Text = "Solo descargar";
+            this.ttpMain.SetToolTip(this.rbDownload, "Descarga los documentos sin imprimirlos \r\npara adjuntarlos en un Email o Chat de " +
+        "WhatsApp");
             this.rbDownload.UseVisualStyleBackColor = true;
             this.rbDownload.CheckedChanged += new System.EventHandler(this.RbDownload_CheckedChanged);
             // 
@@ -172,6 +176,7 @@
             this.rbPrint.TabIndex = 1;
             this.rbPrint.TabStop = true;
             this.rbPrint.Text = "Imprimir";
+            this.ttpMain.SetToolTip(this.rbPrint, "Imprime todos los documentos seleccionados");
             this.rbPrint.UseVisualStyleBackColor = true;
             this.rbPrint.CheckedChanged += new System.EventHandler(this.RbPrint_CheckedChanged);
             // 
@@ -295,14 +300,32 @@
             this.lnkDownloads.TabIndex = 5;
             this.lnkDownloads.TabStop = true;
             this.lnkDownloads.Text = "Ver Descargas";
+            this.ttpMain.SetToolTip(this.lnkDownloads, "Abre la carpeta de descargas con los últimos documentos descargados");
             this.lnkDownloads.Visible = false;
             this.lnkDownloads.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LnkDownloads_LinkClicked);
+            // 
+            // lnkLblCopyDocs
+            // 
+            this.lnkLblCopyDocs.AutoSize = true;
+            this.lnkLblCopyDocs.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lnkLblCopyDocs.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(22)))), ((int)(((byte)(105)))));
+            this.lnkLblCopyDocs.Location = new System.Drawing.Point(321, 401);
+            this.lnkLblCopyDocs.Name = "lnkLblCopyDocs";
+            this.lnkLblCopyDocs.Size = new System.Drawing.Size(140, 18);
+            this.lnkLblCopyDocs.TabIndex = 6;
+            this.lnkLblCopyDocs.TabStop = true;
+            this.lnkLblCopyDocs.Text = "Copiar documentos";
+            this.ttpMain.SetToolTip(this.lnkLblCopyDocs, "Copia los documentos como imágen y permite pegarlos\r\nen un Email o Chat como por " +
+        "ejemplo WhatsApp");
+            this.lnkLblCopyDocs.Visible = false;
+            this.lnkLblCopyDocs.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLblCopyDocs_LinkClicked);
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(473, 451);
+            this.Controls.Add(this.lnkLblCopyDocs);
             this.Controls.Add(this.lnkDownloads);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblStatus);
@@ -352,6 +375,8 @@
         private System.Windows.Forms.CheckBox chkCoupons;
         private System.Windows.Forms.PictureBox pbInvoice;
         private System.Windows.Forms.CheckBox chkInvoice;
+        private System.Windows.Forms.LinkLabel lnkLblCopyDocs;
+        private System.Windows.Forms.ToolTip ttpMain;
     }
 }
 
