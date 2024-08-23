@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
@@ -48,6 +49,9 @@ namespace ImprimirPolizas
         string deviceId = new DeviceIdBuilder()
             .OnWindows(windows => windows.AddWindowsDeviceId())
             .ToString();
+
+        List<Task> _printTasks;
+        bool _hasFailed = false; // Fix this
 
         public frmMain()
         {
@@ -121,8 +125,6 @@ namespace ImprimirPolizas
 
         private void ResetAllStatus(bool wait = true)
         {
-            lblStatus.Text = "Listo";
-            lblStatus.ForeColor = Color.Green;
             // Resetear iconos y estado esperando 5 seg
             // De forma asíncrona sin bloquear UI
             Task.Run(async () =>
@@ -257,21 +259,53 @@ namespace ImprimirPolizas
             lblStatus.ForeColor = Color.Black;
             EnableControls(this, false); // deshabilitar controles
             btnPrint.Text = "CANCELAR";
-            bool hasFailed = false;
+            _hasFailed = false;
 
             // Resetear token si ya se usó
             cts?.Dispose();
             // Crea nuevo token
             cts = new CancellationTokenSource();
 
-            List<Task> printTasks = new List<Task>();
+            _printTasks = new List<Task>();
             if (!chkInvoice.Checked) // Verifica solo si no fue seleccionada la opción Factura
             {
                 // Se agrega una tarea a la lista que debe ser esperada para habilitar
                 // de nuevo el formulario y el botón imprimir/descargar
-                printTasks.Add(
+                _printTasks.Add(
                     Task.Run(async () => await NotifyInvoiceRequired(pcNumber), cts.Token)
                 );
+            }
+
+            await GetPrintDocs(pcNumber);
+
+            // Esperar que terminen todas las tasks
+            await Task.WhenAll(_printTasks);
+            btnPrint.Text = rbPrint.Checked ? "IMPRIMIR" : "DESCARGAR";
+            lblStatus.Text = _hasFailed ? "Error" : "Listo";
+            lblStatus.ForeColor = _hasFailed ? Color.Red : Color.Green;
+            lblStatus.Refresh();
+
+            if (cts.IsCancellationRequested)
+            {
+                lblStatus.Text = "Operación Cancelada.";
+                lblStatus.ForeColor = Color.Red;
+            }
+            if (!_hasFailed && !cts.IsCancellationRequested && !lnkDownloads.Visible)
+            {
+                lnkDownloads.Visible = true;
+                lnkLblCopyDocs.Visible = true;
+            }
+            ResetAllStatus(!cts.IsCancellationRequested); // Reset de iconos y estado
+            EnableControls(this, true); // rehabilitar controles
+        }
+
+        private async Task GetPrintDocs(string pcNumber)
+        {
+            PolicyDocs pcDocs = new PolicyDocs();
+            if (IsCarPolicy(pcNumber))
+            {
+                lblStatus.Text = "Buscando documentos...";
+                pcDocs = await ScTools.GetPolicyDocs(pcNumber, cts.Token);
             }
 
             for (int i = 0; i < options.Length; i++)
@@ -280,7 +314,7 @@ namespace ImprimirPolizas
                     continue;
                 ScTools.DownloadOpt opt = (ScTools.DownloadOpt)options[i];
                 lblStatus.Text = "Descargando archivos...";
-                printTasks.Add(
+                _printTasks.Add(
                     Task.Run(
                         async () =>
                         {
@@ -290,13 +324,26 @@ namespace ImprimirPolizas
 
                                 SetIconStatus(opt, IconState.Loading);
 
-                                await ScTools.DownloadDocAsync(
-                                    pcNumber,
-                                    1,
-                                    opt,
-                                    downloadFolder,
-                                    cts.Token
-                                );
+                                if (IsCarPolicy(pcNumber))
+                                {
+                                    await ScTools.DownloadDocAsync(
+                                        pcDocs.GetIdByOption(opt),
+                                        pcNumber,
+                                        opt,
+                                        downloadFolder,
+                                        cts.Token
+                                    );
+                                }
+                                else
+                                {
+                                    await ScTools.DownloadDocAsync(
+                                        pcNumber,
+                                        1,
+                                        opt,
+                                        downloadFolder,
+                                        cts.Token
+                                    );
+                                }
 
                                 if (rbPrint.Checked)
                                 {
@@ -326,9 +373,9 @@ namespace ImprimirPolizas
                             catch (Exception ex)
                             {
                                 SetIconStatus(opt, IconState.Error);
-                                if (!hasFailed) // Muestra el mensaje de error solo la 1er vez que falla
+                                if (!_hasFailed) // Muestra el mensaje de error solo la 1er vez que falla
                                 {
-                                    hasFailed = true;
+                                    _hasFailed = true;
                                     MessageBox.Show(
                                         ex.Message,
                                         "Error",
@@ -342,24 +389,6 @@ namespace ImprimirPolizas
                     )
                 );
             }
-            // Esperar que terminen todas las tasks
-            await Task.WhenAll(printTasks);
-            btnPrint.Text = rbPrint.Checked ? "IMPRIMIR" : "DESCARGAR";
-            lblStatus.Text = hasFailed ? "Error" : "Listo";
-            lblStatus.ForeColor = hasFailed ? Color.Red : Color.Green;
-
-            if (cts.IsCancellationRequested)
-            {
-                lblStatus.Text = "Operación Cancelada.";
-                lblStatus.ForeColor = Color.Red;
-            }
-            if (!hasFailed && !cts.IsCancellationRequested && !lnkDownloads.Visible)
-            {
-                lnkDownloads.Visible = true;
-                lnkLblCopyDocs.Visible = true;
-            }
-            ResetAllStatus(!cts.IsCancellationRequested); // Reset de iconos y estado
-            EnableControls(this, true); // rehabilitar controles
         }
 
         private void SetIconStatus(ScTools.DownloadOpt opt, IconState icon)
@@ -504,8 +533,6 @@ namespace ImprimirPolizas
                 btnPrint.Enabled = true;
             }
         }
-
-        private void BtnPrint_EnabledChanged(object sender, EventArgs e) { }
 
         private void RbPrint_CheckedChanged(object sender, EventArgs e)
         {

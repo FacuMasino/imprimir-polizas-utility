@@ -259,7 +259,6 @@
             this.btnPrint.TabIndex = 2;
             this.btnPrint.Text = "IMPRIMIR";
             this.btnPrint.UseVisualStyleBackColor = true;
-            this.btnPrint.EnabledChanged += new System.EventHandler(this.BtnPrint_EnabledChanged);
             this.btnPrint.Click += new System.EventHandler(this.BtnPrint_Click);
             // 
             // lblStatus
