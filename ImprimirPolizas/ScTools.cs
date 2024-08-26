@@ -31,6 +31,7 @@ namespace ImprimirPolizas
             paymentReceipt = 5,
             coupons = 6,
             invoice = 7,
+            mercosur = 8,
         }
 
         // Verifica que el servidor este disponible
@@ -168,11 +169,15 @@ namespace ImprimirPolizas
                         };
 
                         client.DownloadFileAsync(
-                            new Uri($"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}"),
+                            new Uri(
+                                $"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}&pcN={pcNumber}"
+                            ),
                             Path.Combine(folderPath, fileName)
                         );
 
-                        Debug.Print($"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}");
+                        Debug.Print(
+                            $"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}&pcN={pcNumber}"
+                        );
 
                         await tcs.Task;
                     }
@@ -230,6 +235,9 @@ namespace ImprimirPolizas
                     break;
                 case DownloadOpt.invoice:
                     fileName += "Factura.pdf";
+                    break;
+                case DownloadOpt.mercosur:
+                    fileName += "Mercosur.pdf";
                     break;
                 default:
                     fileName += ".pdf";
@@ -300,6 +308,8 @@ namespace ImprimirPolizas
                     return "Cupones de pago";
                 case ScTools.DownloadOpt.invoice:
                     return "Factura";
+                case ScTools.DownloadOpt.mercosur:
+                    return "Mercosur";
                 default:
                     return "Desconocido";
             }
@@ -311,53 +321,48 @@ namespace ImprimirPolizas
         )
         {
             PolicyDocs pcDocs = new PolicyDocs();
-
             string baseUrl = $"{_baseUrl}getDocsId?policyNumber={policyNumber}";
+
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    using (HttpResponseMessage res = await client.GetAsync(baseUrl, ctsToken))
-                    {
-                        using (HttpContent content = res.Content)
-                        {
-                            if (res.StatusCode != HttpStatusCode.OK)
-                            {
-                                throw new Exception(
-                                    "Error al obtener los documentos de la póliza."
-                                );
-                            }
-                            var resData = await content.ReadAsStringAsync();
+                    // Realiza la solicitud HTTP asíncrona
+                    HttpResponseMessage response = await client.GetAsync(baseUrl, ctsToken);
 
-                            JObject jsonData = JObject.Parse(resData);
-                            pcDocs.PolicyId = jsonData["Policy"].ToString();
-                            pcDocs.PaymentCupon = jsonData["PaymentCoupon"]?.ToString();
-                            pcDocs.SummaryId = jsonData["PolicySummary"].ToString();
-                            pcDocs.CardId = jsonData["InsuranceCardMandatory"].ToString();
-                            return pcDocs;
-                        }
-                    }
+                    // Maneja la cancelación aquí, si la solicitud se cancela
+                    ctsToken.ThrowIfCancellationRequested();
+
+                    // Asegúrate de manejar la respuesta correctamente
+                    response.EnsureSuccessStatusCode();
+
+                    string responseData = await response.Content.ReadAsStringAsync();
+
+                    JObject jsonData = JObject.Parse(responseData);
+                    pcDocs.PolicyId = jsonData["Policy"]?.ToString();
+                    pcDocs.PaymentCupon = jsonData["PaymentCoupon"]?.ToString();
+                    pcDocs.SummaryId = jsonData["PolicySummary"]?.ToString();
+                    pcDocs.CardId = jsonData["InsuranceCardMandatory"]?.ToString();
+                    pcDocs.MercosurPolicy = jsonData["MercosurPolicy"]?.ToString();
                 }
             }
-            catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+            catch (OperationCanceledException)
             {
-                throw new OperationCanceledException();
+                // Re-lanzar la excepción OperationCanceledException para indicar que la tarea fue cancelada
+                throw;
             }
-            catch (AggregateException ex)
-                when (ex.InnerException is WebException exWeb
-                    && exWeb.Status == WebExceptionStatus.RequestCanceled
-                )
+            catch (HttpRequestException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException();
-            }
-            catch (TaskCanceledException)
-            {
-                throw new OperationCanceledException();
+                // Si hay una excepción de tipo HttpRequestException con un InnerException de tipo OperationCanceledException
+                throw new OperationCanceledException("La solicitud fue cancelada.", ex);
             }
             catch (Exception ex)
             {
-                throw ex;
+                // Re-lanzar cualquier otra excepción que no sea específica de cancelación
+                throw new Exception("Error al obtener los documentos de la póliza.", ex);
             }
+
+            return pcDocs;
         }
 
         public static bool IsCarPolicy(string policyNumber)

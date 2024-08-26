@@ -25,7 +25,7 @@ namespace ImprimirPolizas
 {
     public partial class frmMain : Form
     {
-        private int[] options = new int[5];
+        private int[] options = new int[6];
         private readonly string downloadFolder = Path.Combine(
             Directory.GetCurrentDirectory(),
             "descargas"
@@ -97,7 +97,7 @@ namespace ImprimirPolizas
             }
         }
 
-        private void EnableControls(Control control, bool setEnabled)
+        private void EnableControls(Control control, bool setEnabled, bool isCar = false)
         {
             foreach (Control ctrl in control.Controls)
             {
@@ -119,6 +119,8 @@ namespace ImprimirPolizas
                 else
                 {
                     ctrl.Enabled = setEnabled;
+                    if (!isCar)
+                        chkMercosur.Enabled = false;
                 }
             }
         }
@@ -138,6 +140,7 @@ namespace ImprimirPolizas
                 pbPayment.Image = null;
                 pbCoupons.Image = null;
                 pbInvoice.Image = null;
+                pbMercosur.Image = null;
             });
         }
 
@@ -190,7 +193,7 @@ namespace ImprimirPolizas
             }
             else
             {
-                EnableControls(groupBox2, true);
+                EnableControls(groupBox2, true, IsCarPolicy(txtPolicy.Text));
                 EnableBtnPrint();
             }
         }
@@ -305,7 +308,15 @@ namespace ImprimirPolizas
             if (IsCarPolicy(pcNumber))
             {
                 lblStatus.Text = "Buscando documentos...";
-                pcDocs = await ScTools.GetPolicyDocs(pcNumber, cts.Token);
+                try
+                {
+                    pcDocs = await ScTools.GetPolicyDocs(pcNumber, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    ChangeStatusFromTask("Operación Cancelada.");
+                    return;
+                }
             }
 
             for (int i = 0; i < options.Length; i++)
@@ -412,6 +423,9 @@ namespace ImprimirPolizas
                     break;
                 case ScTools.DownloadOpt.invoice:
                     pbInvoice.Image = img;
+                    break;
+                case ScTools.DownloadOpt.mercosur:
+                    pbMercosur.Image = img;
                     break;
                 default:
                     break;
@@ -698,6 +712,20 @@ namespace ImprimirPolizas
                 IronPdf.Imaging.ImageType.Png,
                 300
             );
+        }
+
+        private void chkMercosur_CheckedChanged(object sender, EventArgs e)
+        {
+            if (btnPrint.Text != "Aguarde...")
+                EnableBtnPrint();
+            if (chkMercosur.Checked)
+            {
+                options[5] = (int)ScTools.DownloadOpt.mercosur;
+            }
+            else
+            {
+                options[5] = 0;
+            }
         }
     }
 }

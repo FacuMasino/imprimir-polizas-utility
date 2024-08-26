@@ -12,6 +12,7 @@ namespace ImprimirPolizas
         public string PolicyId { get; set; }
         public string CardId { get; set; }
         public string PaymentCupon { get; set; }
+        public string MercosurPolicy { get; set; }
 
         public string GetIdByOption(ScTools.DownloadOpt opt)
         {
@@ -25,8 +26,10 @@ namespace ImprimirPolizas
                     return PaymentCupon;
                 case ScTools.DownloadOpt.policyCard:
                     return CardId;
+                case ScTools.DownloadOpt.mercosur:
+                    return MercosurPolicy;
                 default:
-                    return "";
+                    return "0";
             }
         }
     }
