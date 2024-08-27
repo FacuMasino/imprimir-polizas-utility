@@ -33,7 +33,9 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtPolicy = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.pbMercosur = new System.Windows.Forms.PictureBox();
             this.pbInvoice = new System.Windows.Forms.PictureBox();
+            this.chkMercosur = new System.Windows.Forms.CheckBox();
             this.pbCoupons = new System.Windows.Forms.PictureBox();
             this.pbPayment = new System.Windows.Forms.PictureBox();
             this.pbCard = new System.Windows.Forms.PictureBox();
@@ -52,25 +54,26 @@
             this.lnkDownloads = new System.Windows.Forms.LinkLabel();
             this.lnkLblCopyDocs = new System.Windows.Forms.LinkLabel();
             this.ttpMain = new System.Windows.Forms.ToolTip(this.components);
-            this.pbMercosur = new System.Windows.Forms.PictureBox();
-            this.chkMercosur = new System.Windows.Forms.CheckBox();
+            this.pbBranch = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMercosur)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbMercosur)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbBranch)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.pbBranch);
             this.groupBox1.Controls.Add(this.txtPolicy);
             this.groupBox1.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(99, 26);
+            this.groupBox1.Location = new System.Drawing.Point(74, 26);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(270, 71);
+            this.groupBox1.Size = new System.Drawing.Size(317, 71);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Número de Póliza";
@@ -79,7 +82,7 @@
             // txtPolicy
             // 
             this.txtPolicy.Font = new System.Drawing.Font("Roboto", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPolicy.Location = new System.Drawing.Point(36, 25);
+            this.txtPolicy.Location = new System.Drawing.Point(74, 26);
             this.txtPolicy.MaxLength = 17;
             this.txtPolicy.Name = "txtPolicy";
             this.txtPolicy.Size = new System.Drawing.Size(203, 30);
@@ -111,6 +114,15 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Seleccione opciones";
             // 
+            // pbMercosur
+            // 
+            this.pbMercosur.Location = new System.Drawing.Point(195, 191);
+            this.pbMercosur.Name = "pbMercosur";
+            this.pbMercosur.Size = new System.Drawing.Size(25, 25);
+            this.pbMercosur.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbMercosur.TabIndex = 8;
+            this.pbMercosur.TabStop = false;
+            // 
             // pbInvoice
             // 
             this.pbInvoice.Location = new System.Drawing.Point(195, 157);
@@ -119,6 +131,19 @@
             this.pbInvoice.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pbInvoice.TabIndex = 6;
             this.pbInvoice.TabStop = false;
+            // 
+            // chkMercosur
+            // 
+            this.chkMercosur.AutoSize = true;
+            this.chkMercosur.Enabled = false;
+            this.chkMercosur.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkMercosur.Location = new System.Drawing.Point(8, 193);
+            this.chkMercosur.Name = "chkMercosur";
+            this.chkMercosur.Size = new System.Drawing.Size(94, 23);
+            this.chkMercosur.TabIndex = 7;
+            this.chkMercosur.Text = "Mercosur";
+            this.chkMercosur.UseVisualStyleBackColor = true;
+            this.chkMercosur.CheckedChanged += new System.EventHandler(this.chkMercosur_CheckedChanged);
             // 
             // pbCoupons
             // 
@@ -292,6 +317,10 @@
             this.iconsList.Images.SetKeyName(0, "loading.gif");
             this.iconsList.Images.SetKeyName(1, "checkIcon");
             this.iconsList.Images.SetKeyName(2, "errorIcon");
+            this.iconsList.Images.SetKeyName(3, "motorcycle.png");
+            this.iconsList.Images.SetKeyName(4, "car.png");
+            this.iconsList.Images.SetKeyName(5, "doc.png");
+            this.iconsList.Images.SetKeyName(6, "house.png");
             // 
             // lnkDownloads
             // 
@@ -324,27 +353,15 @@
             this.lnkLblCopyDocs.Visible = false;
             this.lnkLblCopyDocs.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLblCopyDocs_LinkClicked);
             // 
-            // pbMercosur
+            // pbBranch
             // 
-            this.pbMercosur.Location = new System.Drawing.Point(195, 191);
-            this.pbMercosur.Name = "pbMercosur";
-            this.pbMercosur.Size = new System.Drawing.Size(25, 25);
-            this.pbMercosur.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbMercosur.TabIndex = 8;
-            this.pbMercosur.TabStop = false;
-            // 
-            // chkMercosur
-            // 
-            this.chkMercosur.AutoSize = true;
-            this.chkMercosur.Enabled = false;
-            this.chkMercosur.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkMercosur.Location = new System.Drawing.Point(8, 193);
-            this.chkMercosur.Name = "chkMercosur";
-            this.chkMercosur.Size = new System.Drawing.Size(94, 23);
-            this.chkMercosur.TabIndex = 7;
-            this.chkMercosur.Text = "Mercosur";
-            this.chkMercosur.UseVisualStyleBackColor = true;
-            this.chkMercosur.CheckedChanged += new System.EventHandler(this.chkMercosur_CheckedChanged);
+            this.pbBranch.InitialImage = null;
+            this.pbBranch.Location = new System.Drawing.Point(43, 29);
+            this.pbBranch.Name = "pbBranch";
+            this.pbBranch.Size = new System.Drawing.Size(25, 25);
+            this.pbBranch.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbBranch.TabIndex = 7;
+            this.pbBranch.TabStop = false;
             // 
             // frmMain
             // 
@@ -369,12 +386,13 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMercosur)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCoupons)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbMercosur)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbBranch)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -406,6 +424,7 @@
         private System.Windows.Forms.ToolTip ttpMain;
         private System.Windows.Forms.PictureBox pbMercosur;
         private System.Windows.Forms.CheckBox chkMercosur;
+        private System.Windows.Forms.PictureBox pbBranch;
     }
 }
 

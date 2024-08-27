@@ -16,6 +16,7 @@ using DeviceId;
 using DeviceId.Windows;
 using IronPdf;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using PdfiumViewer;
 using Segment.Analytics;
 using Segment.Serialization;
@@ -39,6 +40,14 @@ namespace ImprimirPolizas
             Error = 2,
         }
 
+        private enum BranchIcon
+        {
+            Moto = 3,
+            Car = 4,
+            Document = 5,
+            House = 6
+        }
+
         static readonly Configuration SegmentConfig = new Configuration(
             "3agF8DVa82eZaBk1GYxaiYqhAi2f9fv1",
             flushAt: 20,
@@ -51,7 +60,7 @@ namespace ImprimirPolizas
             .ToString();
 
         List<Task> _printTasks;
-        bool _hasFailed = false; // Fix this
+        bool _hasFailed = false;
 
         public frmMain()
         {
@@ -68,6 +77,8 @@ namespace ImprimirPolizas
 
             string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             this.Text += $" - v{assemblyVersion}";
+
+            pbBranch.Image = iconsList.Images[(int)BranchIcon.Document];
         }
 
         private async void EnableWhenReady()
@@ -190,11 +201,32 @@ namespace ImprimirPolizas
             {
                 EnableControls(groupBox2, false);
                 btnPrint.Enabled = false;
+                pbBranch.Image = iconsList.Images[(int)BranchIcon.Document];
             }
             else
             {
+                SetBranchIcon();
                 EnableControls(groupBox2, true, IsCarPolicy(txtPolicy.Text));
                 EnableBtnPrint();
+            }
+        }
+
+        private void SetBranchIcon()
+        {
+            switch (GetBranchNumber(txtPolicy.Text))
+            {
+                case "01":
+                    pbBranch.Image = iconsList.Images[(int)BranchIcon.Car];
+                    break;
+                case "21":
+                    pbBranch.Image = iconsList.Images[(int)BranchIcon.Moto];
+                    break;
+                case "07":
+                    pbBranch.Image = iconsList.Images[(int)BranchIcon.House];
+                    break;
+                default:
+                    pbBranch.Image = iconsList.Images[(int)BranchIcon.Document];
+                    break;
             }
         }
 
@@ -317,6 +349,10 @@ namespace ImprimirPolizas
                     ChangeStatusFromTask("Operación Cancelada.");
                     return;
                 }
+                catch // Si da error el servidor, dejar pcDocs null para que use el otro método de descarga
+                {
+                    pcDocs = null;
+                }
             }
 
             for (int i = 0; i < options.Length; i++)
@@ -335,26 +371,7 @@ namespace ImprimirPolizas
 
                                 SetIconStatus(opt, IconState.Loading);
 
-                                if (IsCarPolicy(pcNumber))
-                                {
-                                    await ScTools.DownloadDocAsync(
-                                        pcDocs.GetIdByOption(opt),
-                                        pcNumber,
-                                        opt,
-                                        downloadFolder,
-                                        cts.Token
-                                    );
-                                }
-                                else
-                                {
-                                    await ScTools.DownloadDocAsync(
-                                        pcNumber,
-                                        1,
-                                        opt,
-                                        downloadFolder,
-                                        cts.Token
-                                    );
-                                }
+                                await TryDownload(pcDocs, pcNumber, opt, downloadFolder, cts.Token);
 
                                 if (rbPrint.Checked)
                                 {
@@ -399,6 +416,43 @@ namespace ImprimirPolizas
                         cts.Token
                     )
                 );
+            }
+        }
+
+        private async Task TryDownload(
+            PolicyDocs pcDocs,
+            string pcNumber,
+            DownloadOpt opt,
+            string downloadFolder,
+            CancellationToken ct
+        )
+        {
+            bool firstTryFail = false;
+
+            // Si no está definido no es ramo Automotor o dio error la nueva API de documentos
+            if (pcDocs != null)
+            {
+                try
+                {
+                    await ScTools.DownloadDocAsync(
+                        pcDocs.GetIdByOption(opt),
+                        pcNumber,
+                        opt,
+                        downloadFolder,
+                        ct
+                    );
+                    return;
+                }
+                catch
+                {
+                    Debug.Print("Falló el primer intento de descarga.");
+                    firstTryFail = true;
+                }
+            }
+
+            if (firstTryFail || pcDocs == null)
+            {
+                await ScTools.DownloadDocAsync(pcNumber, 1, opt, downloadFolder, ct);
             }
         }
 

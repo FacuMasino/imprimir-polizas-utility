@@ -367,6 +367,16 @@ namespace ImprimirPolizas
 
         public static bool IsCarPolicy(string policyNumber)
         {
+            if (GetBranchNumber(policyNumber).Equals("01"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static string GetBranchNumber(string policyNumber)
+        {
             if (string.IsNullOrWhiteSpace(policyNumber))
             {
                 throw new ArgumentException("No se puede ingresar un número de póliza vacío");
@@ -384,12 +394,7 @@ namespace ImprimirPolizas
             // Obtener nro de Rama
             string branch = segments[2];
 
-            if (branch.Equals("01"))
-            {
-                return true;
-            }
-
-            return false;
+            return branch;
         }
 
         public static async Task UpdateStats(
