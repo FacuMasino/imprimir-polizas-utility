@@ -108,7 +108,7 @@ namespace ImprimirPolizas
             }
         }
 
-        private void EnableControls(Control control, bool setEnabled, bool isCar = false)
+        private void EnableControls(Control control, bool setEnabled)
         {
             foreach (Control ctrl in control.Controls)
             {
@@ -130,9 +130,37 @@ namespace ImprimirPolizas
                 else
                 {
                     ctrl.Enabled = setEnabled;
-                    if (!isCar)
-                        chkMercosur.Enabled = false;
                 }
+            }
+        }
+
+        // Deshabilita los checkbox que no corresppondan a la rama ingresada
+        private void SetCheckboxByBranch()
+        {
+            switch (GetBranchNumber(txtPolicy.Text))
+            {
+                case "21":
+                    chkMercosur.Enabled = false; // FIX: Por ahora no esta habilitado para motos
+                    chkMercosur.Checked = false;
+                    break;
+                case "07":
+                    chkPolicyCard.Enabled = false;
+                    chkPolicyCard.Checked = false;
+                    chkInvoice.Enabled = false;
+                    chkInvoice.Checked = false;
+                    chkMercosur.Enabled = false;
+                    chkMercosur.Checked = false;
+                    break;
+                case "06":
+                    chkPolicyCard.Enabled = false;
+                    chkPolicyCard.Checked = false;
+                    chkInvoice.Enabled = false;
+                    chkInvoice.Checked = false;
+                    chkMercosur.Enabled = false;
+                    chkMercosur.Checked = false;
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -206,8 +234,9 @@ namespace ImprimirPolizas
             else
             {
                 SetBranchIcon();
-                EnableControls(groupBox2, true, IsCarPolicy(txtPolicy.Text));
+                EnableControls(groupBox2, true);
                 EnableBtnPrint();
+                SetCheckboxByBranch(); // Verificar que checkboxes corresponden
             }
         }
 
@@ -230,9 +259,25 @@ namespace ImprimirPolizas
             }
         }
 
+        private bool branchHasInvoice(string policyNumber)
+        {
+            switch (GetBranchNumber(policyNumber))
+            {
+                case "01":
+                    return true;
+                case "21":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         private async Task NotifyInvoiceRequired(string policyNumber)
         {
             ScTools.DownloadOpt opt = ScTools.DownloadOpt.invoice;
+
+            if (!branchHasInvoice(policyNumber))
+                return;
 
             try
             {
@@ -332,6 +377,7 @@ namespace ImprimirPolizas
             }
             ResetAllStatus(!cts.IsCancellationRequested); // Reset de iconos y estado
             EnableControls(this, true); // rehabilitar controles
+            SetCheckboxByBranch(); // Deshabilitar los que no correspondan
         }
 
         private async Task GetPrintDocs(string pcNumber)
@@ -353,6 +399,10 @@ namespace ImprimirPolizas
                 {
                     pcDocs = null;
                 }
+            }
+            else
+            {
+                pcDocs = null;
             }
 
             for (int i = 0; i < options.Length; i++)

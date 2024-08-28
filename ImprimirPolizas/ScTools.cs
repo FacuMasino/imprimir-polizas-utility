@@ -4,10 +4,12 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Permissions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using AutoUpdaterDotNET;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace ImprimirPolizas
@@ -16,7 +18,7 @@ namespace ImprimirPolizas
     {
         private static string _baseUrl = "https://sctools-production.up.railway.app/";
 
-        //static private string _baseUrl = "http://127.0.0.1:3100/";
+        //static private string _baseUrl = "http://127.0.0.1:3200/";
 
         public static string BaseUrl
         {
@@ -62,6 +64,9 @@ namespace ImprimirPolizas
         {
             string fileName = GetFileName(pcNumber, opt);
             cancellationToken.ThrowIfCancellationRequested();
+            string downloadUrl =
+                $"{_baseUrl}getBinaryAnnual?pcN={pcNumber}&vhN={vhNumber}&opt={(int)opt}";
+
             try
             {
                 using (var client = new WebClient())
@@ -87,15 +92,11 @@ namespace ImprimirPolizas
                         };
 
                         client.DownloadFileAsync(
-                            new Uri(
-                                $"{_baseUrl}getBinaryAnnual?pcN={pcNumber}&vhN={vhNumber}&opt={(int)opt}"
-                            ),
+                            new Uri(downloadUrl),
                             Path.Combine(folderPath, fileName)
                         );
 
-                        Debug.Print(
-                            $"{_baseUrl}getBinaryAnnual?pcN={pcNumber}&vhN={vhNumber}&opt={(int)opt}"
-                        );
+                        Debug.Print(downloadUrl);
 
                         await tcs.Task;
                     }
@@ -118,7 +119,8 @@ namespace ImprimirPolizas
             }
             catch (Exception e)
             {
-                string msg = e.Message + "\n" + e.StackTrace;
+                SendErrorLog(e, "DownloadDocAsync", downloadUrl);
+                string msg = e.Message + "\n";
                 if (e.InnerException is WebException)
                 {
                     WebException ex = (WebException)e;
@@ -129,7 +131,7 @@ namespace ImprimirPolizas
                             : "Sin información";
                 }
                 throw (
-                    new Exception($"Error en la descarga.\n" + $"Descripción del error:\n{msg}", e)
+                    new Exception($"Error en la descarga.\n" + $"Descripción del error:\n{msg}")
                 );
             }
         }
@@ -144,6 +146,8 @@ namespace ImprimirPolizas
         {
             string fileName = GetFileName(pcNumber, opt);
             cancellationToken.ThrowIfCancellationRequested();
+            string downloadUrl =
+                $"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}&pcN={pcNumber}";
             try
             {
                 using (var client = new WebClient())
@@ -169,15 +173,11 @@ namespace ImprimirPolizas
                         };
 
                         client.DownloadFileAsync(
-                            new Uri(
-                                $"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}&pcN={pcNumber}"
-                            ),
+                            new Uri(downloadUrl),
                             Path.Combine(folderPath, fileName)
                         );
 
-                        Debug.Print(
-                            $"{_baseUrl}getBinaryV2?docId={docId}&opt={(int)opt}&pcN={pcNumber}"
-                        );
+                        Debug.Print(downloadUrl);
 
                         await tcs.Task;
                     }
@@ -200,7 +200,8 @@ namespace ImprimirPolizas
             }
             catch (Exception e)
             {
-                string msg = e.Message + "\n" + e.StackTrace;
+                SendErrorLog(e, "DownloadDocAsync", downloadUrl);
+                string msg = e.Message + "\n";
                 if (e.InnerException is WebException)
                 {
                     WebException ex = (WebException)e;
@@ -211,7 +212,7 @@ namespace ImprimirPolizas
                             : "Sin información";
                 }
                 throw (
-                    new Exception($"Error en la descarga.\n" + $"Descripción del error:\n{msg}", e)
+                    new Exception($"Error en la descarga.\n" + $"Descripción del error:\n{msg}")
                 );
             }
         }
@@ -290,7 +291,8 @@ namespace ImprimirPolizas
             }
             catch (Exception ex)
             {
-                throw ex;
+                SendErrorLog(ex, "requiresInvoice", baseUrl);
+                throw new Exception("Error al obtener condición fiscal.");
             }
         }
 
@@ -358,8 +360,9 @@ namespace ImprimirPolizas
             }
             catch (Exception ex)
             {
+                SendErrorLog(ex, "GetPolicyDocs", baseUrl);
                 // Re-lanzar cualquier otra excepción que no sea específica de cancelación
-                throw new Exception("Error al obtener los documentos de la póliza.", ex);
+                throw new Exception("Error al obtener los documentos de la póliza.");
             }
 
             return pcDocs;
@@ -423,6 +426,52 @@ namespace ImprimirPolizas
             }
             catch
             {
+                return;
+            }
+        }
+
+        public static void SendErrorLog(Exception ex, string functionName, string endpoint = "No")
+        {
+            var data = new
+            {
+                function = functionName,
+                datetime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                endpoint = endpoint,
+                message = ex.Message,
+                stackTrace = ex.StackTrace
+            };
+
+            _ = PostErrorLog(data); // Enviar y continuar sin esperar
+        }
+
+        public static async Task PostErrorLog(object data)
+        {
+            try
+            {
+                // Convertir el objeto a JSON
+                var json = JsonConvert.SerializeObject(data);
+
+                // Crear el contenido de la solicitud
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                string endpoint = _baseUrl + "send-error-log";
+
+                using (HttpClient client = new HttpClient())
+                {
+                    using (HttpResponseMessage res = await client.PostAsync(endpoint, content))
+                    {
+                        using (HttpContent resContent = res.Content)
+                        {
+                            var resData = await resContent.ReadAsStringAsync();
+                            Debug.WriteLine(resData);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error al reportar log");
+                Debug.WriteLine(ex.Message.ToString());
                 return;
             }
         }
