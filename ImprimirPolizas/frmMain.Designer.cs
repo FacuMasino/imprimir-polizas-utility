@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.pbBranch = new System.Windows.Forms.PictureBox();
             this.txtPolicy = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.pbMercosur = new System.Windows.Forms.PictureBox();
@@ -54,8 +55,9 @@
             this.lnkDownloads = new System.Windows.Forms.LinkLabel();
             this.lnkLblCopyDocs = new System.Windows.Forms.LinkLabel();
             this.ttpMain = new System.Windows.Forms.ToolTip(this.components);
-            this.pbBranch = new System.Windows.Forms.PictureBox();
+            this.lbl_otherProducer = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbBranch)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbMercosur)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbInvoice)).BeginInit();
@@ -63,21 +65,31 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbBranch)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.lbl_otherProducer);
             this.groupBox1.Controls.Add(this.pbBranch);
             this.groupBox1.Controls.Add(this.txtPolicy);
             this.groupBox1.Font = new System.Drawing.Font("Roboto", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(74, 26);
+            this.groupBox1.Location = new System.Drawing.Point(74, 10);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(317, 71);
+            this.groupBox1.Size = new System.Drawing.Size(317, 87);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Número de Póliza";
             this.groupBox1.Enter += new System.EventHandler(this.GroupBox1_Enter);
+            // 
+            // pbBranch
+            // 
+            this.pbBranch.InitialImage = null;
+            this.pbBranch.Location = new System.Drawing.Point(43, 29);
+            this.pbBranch.Name = "pbBranch";
+            this.pbBranch.Size = new System.Drawing.Size(25, 25);
+            this.pbBranch.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pbBranch.TabIndex = 7;
+            this.pbBranch.TabStop = false;
             // 
             // txtPolicy
             // 
@@ -353,15 +365,16 @@
             this.lnkLblCopyDocs.Visible = false;
             this.lnkLblCopyDocs.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLblCopyDocs_LinkClicked);
             // 
-            // pbBranch
+            // lbl_otherProducer
             // 
-            this.pbBranch.InitialImage = null;
-            this.pbBranch.Location = new System.Drawing.Point(43, 29);
-            this.pbBranch.Name = "pbBranch";
-            this.pbBranch.Size = new System.Drawing.Size(25, 25);
-            this.pbBranch.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbBranch.TabIndex = 7;
-            this.pbBranch.TabStop = false;
+            this.lbl_otherProducer.AutoSize = true;
+            this.lbl_otherProducer.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_otherProducer.ForeColor = System.Drawing.Color.Red;
+            this.lbl_otherProducer.Location = new System.Drawing.Point(31, 61);
+            this.lbl_otherProducer.Name = "lbl_planPolicy";
+            this.lbl_otherProducer.Size = new System.Drawing.Size(257, 19);
+            this.lbl_otherProducer.TabIndex = 7;
+            this.lbl_otherProducer.Text = "La póliza no pertenece al productor";
             // 
             // frmMain
             // 
@@ -384,6 +397,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbBranch)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbMercosur)).EndInit();
@@ -392,7 +406,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbPayment)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCard)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPolicy)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbBranch)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -425,6 +438,7 @@
         private System.Windows.Forms.PictureBox pbMercosur;
         private System.Windows.Forms.CheckBox chkMercosur;
         private System.Windows.Forms.PictureBox pbBranch;
+        private System.Windows.Forms.Label lbl_otherProducer;
     }
 }
 

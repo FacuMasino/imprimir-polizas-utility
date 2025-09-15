@@ -87,6 +87,7 @@ namespace ImprimirPolizas
             lblStatus.AutoEllipsis = true; // Habilita truncado de texto
             lblStatus.Text = $"Conectando {ScTools.BaseUrl}...";
             EnableControls(groupBox1, false);
+            lbl_otherProducer.Hide();
             bool isAvailable = await ScTools.IsAvailable();
             if (isAvailable)
             {
@@ -183,13 +184,23 @@ namespace ImprimirPolizas
             });
         }
 
-        private void PrintPDF(string filePath, int fromPage = 1, int toPage = 1)
+        private void PrintPDF(string filePath, DownloadOpt downloadOpt, string branchNumber)
         {
+            int defaultFromPage = 1;
+            int defaultToPage = 1;
+
+            // Si se está imprimiendo la póliza del ramo combinado familiar,
+            // imprimir hoja 1 y 2
+            if (downloadOpt.Equals(DownloadOpt.policy) && branchNumber.Equals("07"))
+            {
+                defaultToPage = 2;
+            }
+
             // Create the printer settings for our printer
             var printerSettings = new PrinterSettings
             {
-                FromPage = fromPage,
-                ToPage = toPage,
+                FromPage = defaultFromPage,
+                ToPage = defaultToPage,
                 Copies = 1
             };
 
@@ -225,19 +236,29 @@ namespace ImprimirPolizas
 
         private void TxtPolicy_TextChanged(object sender, EventArgs e)
         {
+            // Verificar que la longitud de caracteres corresponda con un nro de póliza
             if (txtPolicy.TextLength < 17)
             {
                 EnableControls(groupBox2, false);
                 btnPrint.Enabled = false;
                 pbBranch.Image = iconsList.Images[(int)BranchIcon.Document];
+                lbl_otherProducer.Hide();
+                return;
             }
-            else
+
+            if (!ScTools.IsBsAsOffice(txtPolicy.Text))
             {
-                SetBranchIcon();
-                EnableControls(groupBox2, true);
-                EnableBtnPrint();
-                SetCheckboxByBranch(); // Verificar que checkboxes corresponden
+                EnableControls(groupBox2, false);
+                btnPrint.Enabled = false;
+                lbl_otherProducer.Show();
+                return;
             }
+
+            lbl_otherProducer.Hide();
+            SetBranchIcon();
+            EnableControls(groupBox2, true);
+            EnableBtnPrint();
+            SetCheckboxByBranch(); // Verificar cuales checkboxes corresponden
         }
 
         private void SetBranchIcon()
@@ -309,7 +330,7 @@ namespace ImprimirPolizas
                         downloadFolder,
                         ScTools.GetFileName(policyNumber, opt)
                     );
-                    PrintPDF(filePath);
+                    PrintPDF(filePath, opt, GetBranchNumber(policyNumber));
                 }
                 SetIconStatus(opt, IconState.Ready);
             }
@@ -432,7 +453,7 @@ namespace ImprimirPolizas
                                         downloadFolder,
                                         ScTools.GetFileName(pcNumber, opt)
                                     );
-                                    PrintPDF(filePath);
+                                    PrintPDF(filePath, opt, GetBranchNumber(pcNumber));
                                 }
 
                                 SetIconStatus(opt, IconState.Ready);

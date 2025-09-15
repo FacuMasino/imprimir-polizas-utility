@@ -128,7 +128,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABc
-        NAAAAk1TRnQBSQFMAgEBBwEAAQgBAAEIAQABGQEAARkBAAT/AREBAAj/AUIBTQE2BwABNgMAASgDAAFk
+        NAAAAk1TRnQBSQFMAgEBBwEAARgBAAEYAQABGQEAARkBAAT/AREBAAj/AUIBTQE2BwABNgMAASgDAAFk
         AwABMgMAAQEBAAEQBQABEAEnRgABnQFzAfQBPQGuARQBTQEIAU0BCAFNAQgBTQEIAU0BCAFNAQgBTQEI
         AU0BCAFNAQgBTQEIAU0BCAFNAQgBTQEIAU0BCAFNAQgBTQEIAU0BCAGuARQB9AE9AZ0BcwgAAZgBUgFt
         AQwBTQEIAU0BCAFNAQgBEAEhAd4BewoAAd4BewEQASEBTQEIAU0BCAFNAQgBbQEMAZgBUjgAAf8BfwE7
@@ -354,8 +354,11 @@
         AX8B+AExAfAGAAF/AQABHwH9Af8B/gP/AfADAAs=
 </value>
   </data>
+  <metadata name="ttpMain.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>113, 5</value>
+  </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>64</value>
+    <value>65</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
