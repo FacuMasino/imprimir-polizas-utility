@@ -378,6 +378,18 @@ namespace ImprimirPolizas
             return false;
         }
 
+        /// <summary>
+        /// Verifica que el número de póliza ingresado pertenezca a
+        /// la sucursal Buenos Aires (05) para evitar errores de autorización
+        /// </summary>
+        /// <param name="policyNumber">Número de póliza</param>
+        /// <returns></returns>
+        public static bool IsBsAsOffice(string policyNumber)
+        {
+            var segments = policyNumber.Split('-');
+            return segments[1].Equals("05");
+        }
+
         public static string GetBranchNumber(string policyNumber)
         {
             if (string.IsNullOrWhiteSpace(policyNumber))
@@ -391,7 +403,7 @@ namespace ImprimirPolizas
             // Comprobar que hay al menos 4 segmentos (ej: "01-05-21-30115997")
             if (segments.Length < 4)
             {
-                throw new FormatException("Invalid policy number format.");
+                throw new FormatException("Número de póliza inválido.");
             }
 
             // Obtener nro de Rama
